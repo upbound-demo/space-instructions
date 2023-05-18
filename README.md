@@ -67,7 +67,7 @@ tokens you have received.
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
    ```
    ```bash
-   helm -n upbound-system upgrade --install mxp oci://ghcr.io/upbound/mxp --version "${VERSION_NUM}" --wait \
+   helm -n upbound-system upgrade --install mxp oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxp --version "${VERSION_NUM}" --wait \
      --set "mcp-router.ingress.host=${ROUTER_HOST}" \
      --set "mcp-controller.system.router.publicHost=${ROUTER_HOST}" \
      --set "mcp-controller.xpkg.controlPlane.tag=v${VERSION_NUM}"
