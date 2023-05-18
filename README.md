@@ -25,11 +25,11 @@ tokens you have received.
    kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
      --docker-server=https://us-west1-docker.pkg.dev \
      --docker-username=_json_key \
-     --docker-password=$(cat $GCP_TOKEN_PATH)
+     --docker-password="$(cat $GCP_TOKEN_PATH)"
    kubectl -n crossplane-system create secret docker-registry upbound-pull-secret \
      --docker-server=https://us-west1-docker.pkg.dev \
      --docker-username=_json_key \
-     --docker-password=$(cat $GCP_TOKEN_PATH)
+     --docker-password="$(cat $GCP_TOKEN_PATH)"
    ```
 1. Log in with Helm to be able to pull chart images from GCR.
    ```bash
