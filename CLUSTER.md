@@ -177,7 +177,7 @@
    metadata:
      name: irsa
      annotations:
-       eks.amazonaws.com/role-arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/main-cluster-provider-aws-iam
+       eks.amazonaws.com/role-arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/${CLUSTER_NAME}-provider-aws-iam
    spec: {}
    EOF
    ```
