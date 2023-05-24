@@ -154,10 +154,10 @@
    EOF
    ```
    ```bash
-   aws iam create-role --role-name main-cluster-provider-aws-iam --assume-role-policy-document file:///tmp/trust-relationship.json --description "The role for the provider-aws-iam running in the main cluster."
+   aws iam create-role --role-name ${CLUSTER_NAME}-provider-aws-iam --assume-role-policy-document file:///tmp/trust-relationship.json --description "The role for the provider-aws-iam running in the main cluster."
    ```
    ```bash
-   aws iam attach-role-policy --role-name main-cluster-provider-aws-iam --policy-arn=arn:aws:iam::${AWS_ACCOUNT_ID}:policy/provider-aws-iam-full
+   aws iam attach-role-policy --role-name ${CLUSTER_NAME}-provider-aws-iam --policy-arn=arn:aws:iam::${AWS_ACCOUNT_ID}:policy/provider-aws-iam-full
    ```
 
    Install the provider-aws-iam and configure it to assume the role we just created.
@@ -168,7 +168,7 @@
    metadata:
      name: provider-aws-iam
    spec:
-     package: xpkg.upbound.io/upbound-release-candidates/provider-aws-iam:v0.35.0
+     package: xpkg.upbound.io/upbound-release-candidates/provider-aws-iam:v0.36.0
      controllerConfigRef:
        name: irsa
    ---
