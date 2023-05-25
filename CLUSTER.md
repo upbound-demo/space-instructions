@@ -7,7 +7,7 @@
 
 1. Provision a 3-node cluster using `eksctl`.
    ```bash
-   export CLUSTER_NAME=muvaf-plays-1
+   export CLUSTER_NAME=johndoe-plays-1
    export REGION=us-east-1
    ```
    ```bash
