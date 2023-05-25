@@ -26,15 +26,22 @@ tokens you have received.
      --docker-server=https://us-west1-docker.pkg.dev \
      --docker-username=_json_key \
      --docker-password="$(cat $GCP_TOKEN_PATH)"
-   kubectl -n crossplane-system create secret docker-registry upbound-pull-secret \
-     --docker-server=https://us-west1-docker.pkg.dev \
-     --docker-username=_json_key \
-     --docker-password="$(cat $GCP_TOKEN_PATH)"
    ```
+   > If you are authenticating with an IAM User, run the following instead:
+   > ```bash
+   > kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
+   > --docker-server=https://us-west1-docker.pkg.dev \
+   > --docker-username=oauth2accesstoken \
+   > --docker-password="$(gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com)"
+   > ```
 1. Log in with Helm to be able to pull chart images from GCR.
    ```bash
    cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
    ```
+   > If you are authenticating as a User instead of Service Account, run the following:
+   > ```bash
+   > gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com | helm registry login us-west1-docker.pkg.dev -u oauth2accesstoken --password-stdin
+   > ```
 
 ### MXP Provisioning Machinery
 
@@ -146,7 +153,7 @@ environment for brevity.
    kind: ServiceAccount
    metadata:
      name: $PROVIDER
-     namespace: crossplane-system
+     namespace: upbound-system
    ---
    apiVersion: rbac.authorization.k8s.io/v1
    kind: ClusterRoleBinding
@@ -155,7 +162,7 @@ environment for brevity.
    subjects:
      - kind: ServiceAccount
        name: $PROVIDER
-       namespace: crossplane-system
+       namespace: upbound-system
    roleRef:
      kind: ClusterRole
      name: cluster-admin

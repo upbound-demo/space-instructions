@@ -72,13 +72,6 @@
      --values ingress-nginx-aws.yaml
    ```
 
-1. Prepare namespaces.
-   ```bash
-   kubectl create ns crossplane-system
-   kubectl create ns upbound-system
-   ```
-
-
 1. Configure the self-signed certificate issuer.
    ```bash
    # Wait until cert-manager is ready.
@@ -98,7 +91,7 @@
    ```bash
    helm upgrade --install crossplane universal-crossplane \
      --repo https://charts.upbound.io/stable \
-     --namespace crossplane-system \
+     --namespace upbound-system --create-namespace \
      --version v1.12.1-up.1 \
      --wait
    ```
@@ -145,7 +138,7 @@
          "Condition": {
            "StringLike": {
              "${OIDC_PROVIDER}:aud": "sts.amazonaws.com",
-             "${OIDC_PROVIDER}:sub": "system:serviceaccount:crossplane-system:provider-aws-iam-*"
+             "${OIDC_PROVIDER}:sub": "system:serviceaccount:upbound-system:provider-aws-iam-*"
            }
          }
        }
@@ -221,12 +214,6 @@
    ```
    > You can use `load.sh` to pre-load most of the images.
 
-1. Prepare namespaces.
-   ```bash
-   kubectl create ns crossplane-system
-   kubectl create ns upbound-system
-   ```
-
 1. Install ingress-nginx controller.
    ```bash
    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.7.1/deploy/static/provider/kind/deploy.yaml
@@ -262,7 +249,7 @@
    ```bash
    helm upgrade --install crossplane universal-crossplane \
      --repo https://charts.upbound.io/stable \
-     --namespace crossplane-system \
+     --namespace upbound-system --create-namespace \
      --version v1.12.1-up.1 \
      --wait
    ```
