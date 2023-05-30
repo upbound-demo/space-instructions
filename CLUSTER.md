@@ -191,6 +191,8 @@
    EOF
    ```
 
+ The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Environments.
+
 ## kind Cluster
 
 1. Provision a `kind` cluster.
@@ -212,7 +214,11 @@
        protocol: TCP
    EOF
    ```
-   > You can use `load.sh` to pre-load most of the images.
+
+1. Run `load.sh` to pre-load most of the images.
+   ```bash
+   ./load.sh
+   ```
 
 1. Install ingress-nginx controller.
    ```bash
@@ -253,3 +259,5 @@
      --version v1.12.1-up.1 \
      --wait
    ```
+
+ The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Environments.

@@ -14,34 +14,38 @@ Assumes the cluster components mentioned [here](./CLUSTER.md) are installed.
 First, you need to create image pull secrets with the Google Service Account
 tokens you have received.
 
-1. Save the token to a file named `gcrtoken.json`
-   ```bash
-   # Change the path to where you saved the token.
-   export GCP_TOKEN_PATH="/tmp/gcrtoken.json"
-   ```
+1. Create an image pull secret to pull images from GCR. There are two ways to
+   authenticate, you need to follow only one of the following instructions:
 
-1. Create an image pull secret to pull images from GCR.
-   ```bash
-   kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
-     --docker-server=https://us-west1-docker.pkg.dev \
-     --docker-username=_json_key \
-     --docker-password="$(cat $GCP_TOKEN_PATH)"
-   ```
-   > If you are authenticating with an IAM User, run the following instead:
-   > ```bash
-   > kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
-   > --docker-server=https://us-west1-docker.pkg.dev \
-   > --docker-username=oauth2accesstoken \
-   > --docker-password="$(gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com)"
-   > ```
+   * (Service Account Token) Save the token to a file named `gcrtoken.json`.
+     ```bash
+     # Change the path to where you saved the token.
+     export GCP_TOKEN_PATH="THE PATH TO YOUR GCRTOKEN FILE"
+     ```
+     Run the following command.
+     ```bash
+     kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
+       --docker-server=https://us-west1-docker.pkg.dev \
+       --docker-username=_json_key \
+       --docker-password="$(cat $GCP_TOKEN_PATH)"
+     ```
+
+   * (IAM User) Run the following command.
+     ```bash
+     kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
+       --docker-server=https://us-west1-docker.pkg.dev \
+       --docker-username=oauth2accesstoken \
+       --docker-password="$(gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com)"
+     ```
 1. Log in with Helm to be able to pull chart images from GCR.
-   ```bash
-   cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
-   ```
-   > If you are authenticating as a User instead of Service Account, run the following:
-   > ```bash
-   > gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com | helm registry login us-west1-docker.pkg.dev -u oauth2accesstoken --password-stdin
-   > ```
+   * (Service Account Token) Run the following command.
+     ```bash
+     cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
+     ```
+   * (GCP IAM User) Run the following command.
+     ```bash
+     gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com | helm registry login us-west1-docker.pkg.dev -u oauth2accesstoken --password-stdin
+     ```
 
 ### MXP Provisioning Machinery
 
