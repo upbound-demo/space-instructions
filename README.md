@@ -74,7 +74,7 @@ tokens you have received.
    that you can add a public DNS record for `kubectl` requests to find the router,
    hence the control plane instance.
    ```bash
-   export VERSION_NUM=0.8.2
+   export VERSION_NUM=0.9.3
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
    ```
    ```bash
@@ -202,7 +202,7 @@ environment for brevity.
 1. Create your first control plane.
    ```bash
    cat <<EOF | kubectl apply -f -
-   apiVersion: mxp.upbound.io/v1alpha1
+   apiVersion: core.mxe.upbound.io/v1alpha1
    kind: ControlPlane
    metadata:
      name: ctp1
