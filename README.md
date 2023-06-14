@@ -1,7 +1,7 @@
-# Upbound Environments
+# Control Plane Spaces
 
-**DISCLAIMER**: This is the alpha version of on-premise deployment mode of [Upbound
-Managed Crossplane Service](https://www.upbound.io/product/upbound). While the 
+**DISCLAIMER**: This is the alpha version of a self-hosted feature available in 
+[Upbound](https://www.upbound.io/product/upbound). While the 
 service is generally available, this specific mode is not yet production-ready
 and the APIs may change any time.
 
@@ -91,13 +91,13 @@ tokens you have received.
    ```
    Add this host name as CNAME or A record for your domain.
 
-## Using Same Cluster as Environment
+## Using Same Cluster as Control Plane Space
 
 The pods of control planes can be deployed to many clusters which are
-called Upbound Environments.
+called control plane spaces.
 
 In this section, we'll use our existing cluster as the one and only
-environment for brevity.
+control plane space for brevity.
 
 1. Backup/restore and usage report systems are disabled for now. We'll supply
    fake values for credentials required by those systems.
@@ -146,7 +146,7 @@ environment for brevity.
    EOF
    ```
 1. We need to give necessary permissions to both provider-kubernetes and
-   provider-helm service accounts to be able to install environment
+   provider-helm service accounts to be able to install control plane space
    services to the cluster. If it wasn't the same cluster, we'd have to create
    `ProviderConfig`s that point to a kubeconfig with enough permissions.
    ```bash
@@ -182,7 +182,7 @@ environment for brevity.
      kubectl patch provider.pkg.crossplane.io "crossplane-contrib-${PROVIDER}" --type merge -p "{\"spec\": {\"controllerConfigRef\": {\"name\": \"$PROVIDER-incluster\"}}}"
    done
    ```
-1. Create an environment (used to be called HostCluster) that points
+1. Create a control plane space (used to be called HostCluster) that points
    to the existing cluster.
    ```bash
    cat <<EOF | kubectl apply -f -
