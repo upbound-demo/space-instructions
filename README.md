@@ -227,3 +227,8 @@ kubectl get secret kubeconfig-ctp1 -n default -o jsonpath='{.data.kubeconfig}' |
 ```bash
 KUBECONFIG=/tmp/ctp1.yaml kubectl get xrd
 ```
+
+# GitOps
+
+If you are using an AWS cluster, see the instructions
+[here](https://github.com/upbound-demo/environment-aws/)
