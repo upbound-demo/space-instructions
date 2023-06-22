@@ -1,0 +1,59 @@
+# v0.10.1
+
+## Notable Changes
+
+1. Added support for setting environment variables on the mcp-router and mcp-controller pods. These settings are accessible via the mxp Helm chart's values.yaml, specifically:
+```
+mcp-router.extraEnv: []
+
+mcp-controller.extraEnv: []
+```
+
+In an effort to maximize flexibility, the `extraEnv` array is processed within the individual `Deployment`s in the following manner:
+```
+env:
+{{- with .Values.extraEnv }}
+  {{- toYaml . | nindent 12 }}
+{{- end }}  
+```
+This allows operators to specify environment variables in the various formats the `Deployment` resource expects:
+```
+- name: key1
+  value: value1
+- name: key2
+  valueFrom: {}
+```
+
+2. Added support for setting `Annotations` on the mcp-router `Ingress` resource as well as the individual ControlPlane `Ingress` resource.
+
+These settings are accessible via the mxp Helm chart's values.yaml, specifically:
+```
+ingress.annotations: {}
+
+mcp-controller.mcp.ingress.annotations: {} 
+```
+* ingress.annotations: {} - for modifying the `Ingress` handling requests to `proxy.upbound-127.0.0.1.nip.io` in the [space-instructions] doc.
+* mcp-controller.mcp.ingress.annotations: {} - for modifying the `Ingress` handling requests to the individual ControlPlane.
+
+3. In an effort to simplify using a different registry (ECR, Artifactory, etc), the various artifacts and dependencies that make up the Spaces installation we're updated to normalize on using the `us-west1-docker.pkg.dev/orchestration-build/upbound-environments` container registry. Operators can override this setting via the mxp Helm chart's values.yaml, specifically:
+```
+global.container.registry: us-west1-docker.pkg.dev/orchestration-build/upbound-environments
+```
+
+
+## Breaking Changes
+
+The `Group` for the `ControlPlane` kind was updated.
+Previous GVK:
+```
+apiVersion: mxp.upbound.io/v1alpha1
+kind: ControlPlane
+```
+
+Current GVK:
+```
+apiVersion: core.mxe.upbound.io/v1alpha1
+kind: ControlPlane
+```
+
+[space-instructions]: https://github.com/upbound-demo/space-instructions/blob/main/README.md#mxp-provisioning-machinery
