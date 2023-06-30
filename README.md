@@ -74,7 +74,7 @@ tokens you have received.
    that you can add a public DNS record for `kubectl` requests to find the router,
    hence the control plane instance.
    ```bash
-   export VERSION_NUM=0.10.1
+   export VERSION_NUM=0.11.0
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
    ```
    ```bash
