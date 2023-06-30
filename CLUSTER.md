@@ -220,18 +220,6 @@
    ./load.sh
    ```
 
-1. Install ingress-nginx controller.
-   ```bash
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.7.1/deploy/static/provider/kind/deploy.yaml
-   ```
-   ```bash
-   # Make sure ingress-nginx gets ready.
-   kubectl wait --namespace ingress-nginx \
-     --for=condition=ready pod \
-     --selector=app.kubernetes.io/component=controller \
-     --timeout=360s
-   ```
-
 1. Install cert-manager.
    ```bash
    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
