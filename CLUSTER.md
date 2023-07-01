@@ -1,6 +1,7 @@
 # Prepare the Main Cluster
 
 * [AWS EKS](#aws-eks)
+* [Azure AKS](#azure-aks)
 * [kind](#kind-cluster)
 
 ## AWS EKS
@@ -191,7 +192,68 @@
    EOF
    ```
 
- The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Environments.
+ The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+
+## Azure AKS
+1. export common variables
+  ```bash
+  export RESOURCE_GROUP_NAME=johndoe-plays-1
+  export CLUSTER_NAME=johndoe-plays-1
+  export LOCATION=westus
+  ```
+
+1. Provision a new resourceGroup
+  ```bash
+  az group create --name ${RESOURCE_GROUP_NAME} --location ${LOCATION}
+  ```
+
+1. Provision a new `AKS` cluster.
+  ```bash
+  az aks create -g ${RESOURCE_GROUP_NAME} -n ${CLUSTER_NAME} \
+    --enable-managed-identity \
+    --node-count 3 \
+    --node-vm-size Standard_D4s_v4 \
+    --enable-addons monitoring \
+    --enable-msi-auth-for-monitoring \
+    --generate-ssh-keys \
+    --network-plugin kubenet \
+    --network-policy calico
+  ```
+
+1. Acquire updated kubeconfig
+  ```bash
+  az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME}
+  ```
+
+1. Install cert-manager.
+   ```bash
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+   ```
+1. Configure the self-signed certificate issuer.
+   ```bash
+   # Wait until cert-manager is ready.
+   kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
+   ```
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: cert-manager.io/v1
+   kind: ClusterIssuer
+   metadata:
+     name: selfsigned
+   spec:
+     selfSigned: {}
+   EOF
+   ```
+1. Install Crossplane.
+   ```bash
+   helm upgrade --install crossplane universal-crossplane \
+     --repo https://charts.upbound.io/stable \
+     --namespace upbound-system --create-namespace \
+     --version v1.12.2-up.2 \
+     --wait
+   ```
+
+The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
 
 ## kind Cluster
 
@@ -244,8 +306,8 @@
    helm upgrade --install crossplane universal-crossplane \
      --repo https://charts.upbound.io/stable \
      --namespace upbound-system --create-namespace \
-     --version v1.12.1-up.1 \
+     --version v1.12.2-up.2 \
      --wait
    ```
 
- The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Environments.
+ The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
