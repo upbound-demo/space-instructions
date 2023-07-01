@@ -73,15 +73,22 @@ tokens you have received.
    if you are deploying to a remote cluster, it needs to be **a domain you own** so
    that you can add a public DNS record for `kubectl` requests to find the router,
    hence the control plane instance.
+
+   `CLUSTER_TYPE` enables you to deploy cluster specific resources during 
+   installation. Currently the only supported types are `kind` or `aks`. `eks`
+   and `gke` will be supported in a future release.
+   >NOTE: if you are deploying into AKS, this CLUSTER_TYPE *must* be 'aks'.
    ```bash
    export VERSION_NUM=0.11.0
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
+   export CLUSTER_TYPE=kind
    ```
    ```bash
    helm -n upbound-system upgrade --install mxp oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxp --version "${VERSION_NUM}" --wait \
      --set "mcp-router.ingress.host=${ROUTER_HOST}" \
      --set "mcp-controller.system.router.publicHost=${ROUTER_HOST}" \
-     --set "mcp-controller.xpkg.controlPlane.tag=v${VERSION_NUM}"
+     --set "mcp-controller.xpkg.controlPlane.tag=v${VERSION_NUM}" \
+     --set "global.clusterType=${CLUSTER_TYPE}"
    ```
 
 1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
