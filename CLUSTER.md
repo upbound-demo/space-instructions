@@ -2,6 +2,7 @@
 
 * [AWS EKS](#aws-eks)
 * [Azure AKS](#azure-aks)
+* [Google Cloud GKE](#google-cloud-gke)
 * [kind](#kind-cluster)
 
 ## AWS EKS
@@ -223,6 +224,57 @@
 1. Acquire updated kubeconfig
   ```bash
   az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME}
+  ```
+
+1. Install cert-manager.
+   ```bash
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+   ```
+1. Configure the self-signed certificate issuer.
+   ```bash
+   # Wait until cert-manager is ready.
+   kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
+   ```
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: cert-manager.io/v1
+   kind: ClusterIssuer
+   metadata:
+     name: selfsigned
+   spec:
+     selfSigned: {}
+   EOF
+   ```
+1. Install Crossplane.
+   ```bash
+   helm upgrade --install crossplane universal-crossplane \
+     --repo https://charts.upbound.io/stable \
+     --namespace upbound-system --create-namespace \
+     --version v1.12.2-up.2 \
+     --wait
+   ```
+
+The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+
+## Google Cloud GKE
+1. export common variables
+  ```bash
+  export CLUSTER_NAME=johndoe-plays-1
+  export LOCATION=us-west1-a
+  ```
+
+1. Provision a new `GKE` cluster.
+  ```bash
+  gcloud container clusters create ${CLUSTER_NAME} \
+    --enable-network-policy \
+    --num-nodes=3 \
+    --zone=${LOCATION} \
+    --machine-type=e2-standard-16
+  ```
+
+1. Acquire updated kubeconfig
+  ```bash
+  gcloud container clusters get-credentials ${CLUSTER_NAME} --zone=${LOCATION}
   ```
 
 1. Install cert-manager.
