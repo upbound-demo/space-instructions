@@ -96,7 +96,7 @@ tokens you have received.
      --set "mcp-controller.system.router.publicHost=${ROUTER_HOST}" \
      --set "mcp-controller.xpkg.controlPlane.tag=v${VERSION_NUM}" \
      --set "global.clusterType=${CLUSTER_TYPE}" \
-     --set "ingress.provision=${INGRESS_PROVISION}
+     --set "ingress.provision=${INGRESS_PROVISION}"
    ```
 
 1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
