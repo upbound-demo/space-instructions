@@ -78,17 +78,25 @@ tokens you have received.
    installation. Currently the only supported types are `kind` or `aks`. `eks`
    and `gke` will be supported in a future release.
    >NOTE: if you are deploying into AKS, this CLUSTER_TYPE *must* be 'aks'.
+
+   `INGRESS_PROVISION` if you have installed ingress-nginx on your own, then 
+   you'll want to set `INGRESS_PROVISION=false`. When true, the 
+   ingress-nginx-controller and related resources are provisioned automatically
+   as part of the helm installation step below.
+
    ```bash
    export VERSION_NUM=0.11.0
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
    export CLUSTER_TYPE=kind
+   export INGRESS_PROVISION=true
    ```
    ```bash
    helm -n upbound-system upgrade --install mxp oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxp --version "${VERSION_NUM}" --wait \
      --set "mcp-router.ingress.host=${ROUTER_HOST}" \
      --set "mcp-controller.system.router.publicHost=${ROUTER_HOST}" \
      --set "mcp-controller.xpkg.controlPlane.tag=v${VERSION_NUM}" \
-     --set "global.clusterType=${CLUSTER_TYPE}"
+     --set "global.clusterType=${CLUSTER_TYPE}" \
+     --set "global.ingress.provision=${INGRESS_PROVISION}
    ```
 
 1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
