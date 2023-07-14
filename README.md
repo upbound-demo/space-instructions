@@ -1,7 +1,7 @@
 # Control Plane Spaces
 
-**DISCLAIMER**: This is the alpha version of a self-hosted feature available in 
-[Upbound](https://www.upbound.io/product/upbound). While the 
+**DISCLAIMER**: This is the alpha version of a self-hosted feature available in
+[Upbound](https://www.upbound.io/product/upbound). While the
 service is generally available, this specific mode is not yet production-ready
 and the APIs may change any time.
 
@@ -17,12 +17,15 @@ tokens you have received.
 1. Create an image pull secret to pull images from GCR. There are two ways to
    authenticate, you need to follow only one of the following instructions:
 
-   * (Service Account Token) Save the token to a file named `gcrtoken.json`.
+   - (Service Account Token) Save the token to a file named `gcrtoken.json`.
+
      ```bash
      # Change the path to where you saved the token.
      export GCP_TOKEN_PATH="THE PATH TO YOUR GCRTOKEN FILE"
      ```
+
      Run the following command.
+
      ```bash
      kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
        --docker-server=https://us-west1-docker.pkg.dev \
@@ -30,19 +33,20 @@ tokens you have received.
        --docker-password="$(cat $GCP_TOKEN_PATH)"
      ```
 
-   * (IAM User) Run the following command.
+   - (IAM User) Run the following command.
      ```bash
      kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
        --docker-server=https://us-west1-docker.pkg.dev \
        --docker-username=oauth2accesstoken \
        --docker-password="$(gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com)"
      ```
+
 1. Log in with Helm to be able to pull chart images from GCR.
-   * (Service Account Token) Run the following command.
+   - (Service Account Token) Run the following command.
      ```bash
      cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
      ```
-   * (GCP IAM User) Run the following command.
+   - (GCP IAM User) Run the following command.
      ```bash
      gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com | helm registry login us-west1-docker.pkg.dev -u oauth2accesstoken --password-stdin
      ```
@@ -50,6 +54,7 @@ tokens you have received.
 ### MXP Provisioning Machinery
 
 1. Create the RSA keys for securing the inter-service communication.
+
    ```bash
    CERTS=(cert-token-signing-gateway cert-token-signing)
    for NAME in $CERTS; do
@@ -74,22 +79,24 @@ tokens you have received.
    that you can add a public DNS record for `kubectl` requests to find the router,
    hence the control plane instance.
 
-   `CLUSTER_TYPE` enables you to deploy cluster specific resources during 
-   installation. Currently the only supported types are `kind` or `aks`. `eks`
-   and `gke` will be supported in a future release.
-   >NOTE: if you are deploying into AKS, this CLUSTER_TYPE *must* be 'aks'.
+   `CLUSTER_TYPE` enables you to deploy cluster specific resources during installation. Currently
+   the only supported types are `kind`, `aks`, or `gke`. `eks` will be supported in a future
+   release.
 
-   `INGRESS_PROVISION` if you have installed ingress-nginx on your own, then 
-   you'll want to set `INGRESS_PROVISION=false`. When true, the 
+   > NOTE: if you are deploying into AKS, this CLUSTER*TYPE \_must* be 'aks'.
+
+   `INGRESS_PROVISION` if you have installed ingress-nginx on your own, then
+   you'll want to set `INGRESS_PROVISION=false`. When true, the
    ingress-nginx-controller and related resources are provisioned automatically
    as part of the helm installation step below.
 
    ```bash
-   export VERSION_NUM=0.11.0
+   export VERSION_NUM=0.12.0
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
    export CLUSTER_TYPE=kind
    export INGRESS_PROVISION=true
    ```
+
    ```bash
    helm -n upbound-system upgrade --install mxp oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxp --version "${VERSION_NUM}" --wait \
      --set "mcp-router.ingress.host=${ROUTER_HOST}" \
@@ -116,6 +123,7 @@ control plane space for brevity.
 
 1. Backup/restore and usage report systems are disabled for now. We'll supply
    fake values for credentials required by those systems.
+
    ```bash
    GCP_SA_KEY="$(echo random_str | base64)"
    cat <<EOF | kubectl apply -f -
@@ -215,6 +223,7 @@ control plane space for brevity.
    kubectl wait hostcluster.mcp.upbound.io/00000000-0000-0000-0000-000000000000 --for condition=Ready=True --timeout=360s
    ```
 1. Create your first control plane.
+
    ```bash
    cat <<EOF | kubectl apply -f -
    apiVersion: core.mxe.upbound.io/v1alpha1
@@ -229,6 +238,7 @@ control plane space for brevity.
    ```
 
    Wait until it's ready.
+
    ```bash
    kubectl wait controlplane ctp1 --for condition=Ready=True --timeout=360s
    ```
