@@ -91,14 +91,14 @@ tokens you have received.
    as part of the helm installation step below.
 
    ```bash
-   export VERSION_NUM=0.12.0
+   export VERSION_NUM=0.13.0
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
    export CLUSTER_TYPE=kind
    export INGRESS_PROVISION=true
    ```
 
    ```bash
-   helm -n upbound-system upgrade --install mxp oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxp --version "${VERSION_NUM}" --wait \
+   helm -n upbound-system upgrade --install mxe oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxe --version "${VERSION_NUM}" --wait \
      --set "mcp-router.ingress.host=${ROUTER_HOST}" \
      --set "mcp-controller.system.router.publicHost=${ROUTER_HOST}" \
      --set "mcp-controller.xpkg.controlPlane.tag=v${VERSION_NUM}" \
