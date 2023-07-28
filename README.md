@@ -99,9 +99,9 @@ tokens you have received.
 
    ```bash
    helm -n upbound-system upgrade --install mxe oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxe --version "${VERSION_NUM}" --wait \
-     --set "mcp-router.ingress.host=${ROUTER_HOST}" \
-     --set "mcp-controller.system.router.publicHost=${ROUTER_HOST}" \
-     --set "mcp-controller.xpkg.controlPlane.tag=v${VERSION_NUM}" \
+     --set "router.ingress.host=${ROUTER_HOST}" \
+     --set "controller.system.router.publicHost=${ROUTER_HOST}" \
+     --set "controller.xpkg.controlPlane.tag=v${VERSION_NUM}" \
      --set "global.clusterType=${CLUSTER_TYPE}" \
      --set "ingress.provision=${INGRESS_PROVISION}"
    ```
