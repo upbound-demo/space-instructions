@@ -326,11 +326,6 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    EOF
    ```
 
-1. Run `load.sh` to pre-load most of the images.
-   ```bash
-   ./load.sh
-   ```
-
 1. Install cert-manager.
    ```bash
    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
