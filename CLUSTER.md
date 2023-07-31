@@ -76,7 +76,6 @@
 
 1. Configure the self-signed certificate issuer.
    ```bash
-   # Wait until cert-manager is ready.
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
    ```bash
@@ -232,7 +231,6 @@
    ```
 1. Configure the self-signed certificate issuer.
    ```bash
-   # Wait until cert-manager is ready.
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
    ```bash
@@ -283,7 +281,6 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    ```
 1. Configure the self-signed certificate issuer.
    ```bash
-   # Wait until cert-manager is ready.
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
    ```bash
@@ -340,7 +337,6 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    ```
 1. Configure the self-signed certificate issuer.
    ```bash
-   # Wait until cert-manager is ready.
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
    ```bash
