@@ -130,7 +130,7 @@ control plane space for brevity.
    apiVersion: v1
    kind: Secret
    metadata:
-     name: mcp-backup-sa
+     name: mxp-backup-sa
      namespace: upbound-system
    type: Opaque
    data:
