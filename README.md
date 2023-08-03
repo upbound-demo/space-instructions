@@ -121,8 +121,7 @@ called control plane spaces.
 In this section, we'll use our existing cluster as the one and only
 control plane space for brevity.
 
-1. Backup/restore and usage report systems are disabled for now. We'll supply
-   fake values for credentials required by those systems.
+1. Backup/restore is disabled for now. We'll supply fake credentials:
 
    ```bash
    GCP_SA_KEY="$(echo random_str | base64)"
@@ -131,15 +130,6 @@ control plane space for brevity.
    kind: Secret
    metadata:
      name: mxp-backup-sa
-     namespace: upbound-system
-   type: Opaque
-   data:
-     key.json: ${GCP_SA_KEY}
-   ---
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: mcp-vector-sa
      namespace: upbound-system
    type: Opaque
    data:
