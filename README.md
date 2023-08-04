@@ -226,7 +226,7 @@ control plane space for brevity.
 
    ```bash
    cat <<EOF | kubectl apply -f -
-   apiVersion: core.mxe.upbound.io/v1alpha1
+   apiVersion: spaces.upbound.io/v1alpha1
    kind: ControlPlane
    metadata:
      name: ctp1
