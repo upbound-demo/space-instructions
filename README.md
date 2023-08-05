@@ -91,7 +91,7 @@ tokens you have received.
    as part of the helm installation step below.
 
    ```bash
-   export VERSION_NUM=0.13.0
+   export VERSION_NUM=0.13.1
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
    export CLUSTER_TYPE=kind
    export INGRESS_PROVISION=true
