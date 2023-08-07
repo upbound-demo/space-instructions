@@ -93,7 +93,7 @@
    helm upgrade --install crossplane universal-crossplane \
      --repo https://charts.upbound.io/stable \
      --namespace upbound-system --create-namespace \
-     --version v1.12.1-up.1 \
+     --version v1.12.2-up.2 \
      --wait
    ```
 
