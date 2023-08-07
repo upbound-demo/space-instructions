@@ -162,7 +162,7 @@
    metadata:
      name: provider-aws-iam
    spec:
-     package: xpkg.upbound.io/upbound-release-candidates/provider-aws-iam:v0.36.0
+     package: xpkg.upbound.io/upbound/provider-aws-iam:v0.38.0
      controllerConfigRef:
        name: irsa
    ---
