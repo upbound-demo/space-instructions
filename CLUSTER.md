@@ -313,6 +313,7 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    apiVersion: kind.x-k8s.io/v1alpha4
    nodes:
    - role: control-plane
+     image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
      kubeadmConfigPatches:
      - |
        kind: InitConfiguration
