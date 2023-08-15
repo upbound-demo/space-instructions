@@ -78,16 +78,6 @@
    ```bash
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: cert-manager.io/v1
-   kind: ClusterIssuer
-   metadata:
-     name: selfsigned
-   spec:
-     selfSigned: {}
-   EOF
-   ```
 1. Install Crossplane.
    ```bash
    helm upgrade --install crossplane universal-crossplane \
@@ -233,16 +223,6 @@
    ```bash
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: cert-manager.io/v1
-   kind: ClusterIssuer
-   metadata:
-     name: selfsigned
-   spec:
-     selfSigned: {}
-   EOF
-   ```
 1. Install Crossplane.
    ```bash
    helm upgrade --install crossplane universal-crossplane \
@@ -283,16 +263,6 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    ```bash
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: cert-manager.io/v1
-   kind: ClusterIssuer
-   metadata:
-     name: selfsigned
-   spec:
-     selfSigned: {}
-   EOF
-   ```
 1. Install Crossplane.
    ```bash
    helm upgrade --install crossplane universal-crossplane \
@@ -331,19 +301,6 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    ```bash
    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
    ```
-1. Configure the self-signed certificate issuer.
-   ```bash
-   kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
-   ```
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: cert-manager.io/v1
-   kind: ClusterIssuer
-   metadata:
-     name: selfsigned
-   spec:
-     selfSigned: {}
-   EOF
    ```
 1. Install Crossplane.
    ```bash

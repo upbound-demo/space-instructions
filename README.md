@@ -53,27 +53,6 @@ tokens you have received.
 
 ### MXP Provisioning Machinery
 
-1. Create the RSA keys for securing the inter-service communication.
-
-   ```bash
-   CERTS=(cert-token-signing-gateway cert-token-signing)
-   for NAME in $CERTS; do
-      ssh-keygen -t rsa -b 4096 -m PEM -f "/tmp/${NAME}.key" -N ''
-      openssl rsa -in "/tmp/${NAME}.key" -pubout -outform PEM -out "/tmp/${NAME}.crt"
-      cat <<EOF | kubectl apply -f -
-   apiVersion: v1
-   kind: Secret
-   type: kubernetes.io/tls
-   metadata:
-     name: ${NAME}
-     namespace: upbound-system
-   data:
-     tls.crt: "$(openssl base64 -A -in /tmp/${NAME}.crt)"
-     tls.key: "$(openssl base64 -A -in /tmp/${NAME}.key)"
-   EOF
-   done
-   ```
-
 1. Install `mxp`. In a local cluster, you don't need to change `ROUTER_HOST` but
    if you are deploying to a remote cluster, it needs to be **a domain you own** so
    that you can add a public DNS record for `kubectl` requests to find the router,
@@ -85,25 +64,18 @@ tokens you have received.
 
    > NOTE: if you are deploying into AKS, this CLUSTER*TYPE \_must* be 'aks'.
 
-   `INGRESS_PROVISION` if you have installed ingress-nginx on your own, then
-   you'll want to set `INGRESS_PROVISION=false`. When true, the
-   ingress-nginx-controller and related resources are provisioned automatically
-   as part of the helm installation step below.
-
    ```bash
-   export VERSION_NUM=0.13.1
+   export VERSION_NUM=0.14.0-13.g2f2dceff
    export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
    export CLUSTER_TYPE=kind
-   export INGRESS_PROVISION=true
+   export UPBOUND_ACCOUNT=<your upbound account>
    ```
 
    ```bash
    helm -n upbound-system upgrade --install mxe oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxe --version "${VERSION_NUM}" --wait \
-     --set "router.ingress.host=${ROUTER_HOST}" \
-     --set "system.router.publicHost=${ROUTER_HOST}" \
-     --set "xpkg.controlPlane.tag=v${VERSION_NUM}" \
-     --set "global.clusterType=${CLUSTER_TYPE}" \
-     --set "ingress.provision=${INGRESS_PROVISION}"
+     --set "ingress.host=${ROUTER_HOST}" \
+     --set "clusterType=${CLUSTER_TYPE}" \
+     --set "account=${UPBOUND_ACCOUNT}"
    ```
 
 1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
@@ -120,32 +92,6 @@ called control plane spaces.
 
 In this section, we'll use our existing cluster as the one and only
 control plane space for brevity.
-
-1. Backup/restore and usage report systems are disabled for now. We'll supply
-   fake values for credentials required by those systems.
-
-   ```bash
-   GCP_SA_KEY="$(echo random_str | base64)"
-   cat <<EOF | kubectl apply -f -
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: mxp-backup-sa
-     namespace: upbound-system
-   type: Opaque
-   data:
-     key.json: ${GCP_SA_KEY}
-   ---
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: mcp-vector-sa
-     namespace: upbound-system
-   type: Opaque
-   data:
-     key.json: ${GCP_SA_KEY}
-   EOF
-   ```
 
 1. Create `ProviderConfig`s for Helm and Kubernetes providers to deploy host
    cluster services to the existing cluster.
@@ -205,28 +151,12 @@ control plane space for brevity.
      kubectl patch provider.pkg.crossplane.io "crossplane-contrib-${PROVIDER}" --type merge -p "{\"spec\": {\"controllerConfigRef\": {\"name\": \"$PROVIDER-incluster\"}}}"
    done
    ```
-1. Create a control plane space (used to be called HostCluster) that points
-   to the existing cluster.
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: mcp.upbound.io/v1alpha1
-   kind: HostCluster
-   metadata:
-     name: 00000000-0000-0000-0000-000000000000
-   spec:
-     compositionRef:
-       name: incluster.hostclusters.mcp.upbound.io
-   EOF
-   ```
-   Wait for the host cluster to be ready.
-   ```bash
-   kubectl wait hostcluster.mcp.upbound.io/00000000-0000-0000-0000-000000000000 --for condition=Ready=True --timeout=360s
-   ```
+
 1. Create your first control plane.
 
    ```bash
    cat <<EOF | kubectl apply -f -
-   apiVersion: core.mxe.upbound.io/v1alpha1
+   apiVersion: spaces.upbound.io/v1alpha1
    kind: ControlPlane
    metadata:
      name: ctp1
