@@ -89,55 +89,44 @@ You sould now be able to jump to [Create your first control plane](#create-your-
 
    If you need an Ingress provider, Upbound recommends Nginx as a starting point. To install:
    ```bash
-    helm repo add ngnix https://kubernetes.github.io/ingress-nginx
-    helm repo update
-    helm install -n ingress --create-namespace \
-        nginx-ingress nginx/ingress-nginx
+  helm repo add nginx https://kubernetes.github.io/ingress-nginx
+  helm repo update
+  helm install -n ingress-nginx --create-namespace \
+        ingress-nginx nginx/ingress-nginx
     ```
 
    Then, to create the Service, run:
-   ```
-   kubectl apply -f-<<EOM
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: ingress-nginx-controller
-      namespace: ingress-nginx
-    spec:
-      allocateLoadBalancerNodePorts: true
-      externalTrafficPolicy: Cluster
-      internalTrafficPolicy: Cluster
-      ipFamilies:
-      - IPv4
-      ipFamilyPolicy: SingleStack
-      ports:
-      - name: http
-        port: 80
-        protocol: TCP
-        targetPort: http
-      - name: https
-        port: 443
-        protocol: TCP
-        targetPort: https
-      selector:
-        app.kubernetes.io/component: controller
-        app.kubernetes.io/instance: nginx-ingress
-        app.kubernetes.io/name: ingress-nginx
-      sessionAffinity: None
-      type: LoadBalancer
-    EOM
-    ```
-
-1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
-   facing ingress. To get the IP address for the Ingress, run:
    ```bash
-   kubectl get ingress \
-        -n upbound-system mxe-router-ingress \
-        -o jsonpath='{.status.loadBalancer.ingress[0].ip}
-   ```
-   If the above command doesn't return an IP address then your IP Address provider may not have
-   allocated an address yet. Otherwise, set the IP address as an A record for the DNS hostname
-   selected the `Install MXP` step.
+   kubectl apply -f -<<EOM
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: ingress-nginx-controller
+     namespace: ingress-nginx
+   spec:
+     allocateLoadBalancerNodePorts: true
+     externalTrafficPolicy: Cluster
+     internalTrafficPolicy: Cluster
+     ipFamilies:
+     - IPv4
+     ipFamilyPolicy: SingleStack
+     ports:
+     - name: http
+       port: 80
+       protocol: TCP
+       targetPort: http
+     - name: https
+       port: 443
+       protocol: TCP
+       targetPort: https
+     selector:
+       app.kubernetes.io/component: controller
+       app.kubernetes.io/instance: nginx-ingress
+       app.kubernetes.io/name: ingress-nginx
+     sessionAffinity: None
+     type: LoadBalancer
+   EOM
+    ```
 
 #### Installing provider-k8s and provider-helm
 1. Create ControllerConfigs for provider-helm and provider-kubernetes
@@ -262,11 +251,15 @@ You sould now be able to jump to [Create your first control plane](#create-your-
    ```
 
 1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
-   facing ingress.
+   facing ingress. To get the IP address for the Ingress, run:
    ```bash
-   kubectl get ingress -n upbound-system mcp-router-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+   kubectl get ingress \
+        -n upbound-system mxe-router-ingress \
+        -o jsonpath='{.status.loadBalancer.ingress[0].ip}
    ```
-   Add this host name as CNAME or A record for your domain.
+   If the above command doesn't return an IP address then your IP Address provider may not have
+   allocated an address yet. Otherwise, set the IP address as an A record for the DNS hostname
+   selected the `Install MXP` step.
 
 ## Create your first control plane.
 
