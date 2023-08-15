@@ -11,6 +11,26 @@ Assumes the cluster components mentioned [here](./CLUSTER.md) are installed.
 
 ## Installation
 
+Installation is broken down into the following sections:
+
+* [Authentication](#authentication)
+* [Using Up CLI](#using-up-cli)
+* [Using Helm](#using-helm)
+
+### Prerequistes
+
+#### Acquire your Upbound Account
+The Upbound representative you've been working with should provide an 
+`Upbound Account` string when providing the key.json that you'll use in the 
+next step.
+
+Once you have the Upbound Account string set the following environment 
+variable to be used in future steps
+```
+export UPBOUND_ACCOUNT=<your upbound account>
+```
+
+#### Authentication
 First, you need to create image pull secrets with the Google Service Account
 tokens you have received.
 
@@ -33,65 +53,69 @@ tokens you have received.
        --docker-password="$(cat $GCP_TOKEN_PATH)"
      ```
 
-   - (IAM User) Run the following command.
-     ```bash
-     kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
-       --docker-server=https://us-west1-docker.pkg.dev \
-       --docker-username=oauth2accesstoken \
-       --docker-password="$(gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com)"
-     ```
-
 1. Log in with Helm to be able to pull chart images from GCR.
    - (Service Account Token) Run the following command.
      ```bash
      cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
      ```
-   - (GCP IAM User) Run the following command.
-     ```bash
-     gcloud auth print-access-token --impersonate-service-account pull-environments-upbound-eng@orchestration-build.iam.gserviceaccount.com | helm registry login us-west1-docker.pkg.dev -u oauth2accesstoken --password-stdin
-     ```
+#### Set the target version
+```
+export VERSION_NUM=0.14.0-13.g2f2dceff
+```
 
-### MXP Provisioning Machinery
+### Using Up CLI
 
-1. Install `spaces`. In a local cluster, you don't need to change `ROUTER_HOST` but
-   if you are deploying to a remote cluster, it needs to be **a domain you own** so
-   that you can add a public DNS record for `kubectl` requests to find the router,
-   hence the control plane instance.
+The `up` CLI today will give you the most batteries included experience we can
+offer. It will detect with certain prerequisites are not met and prompt you to
+install them in order to move forward.
 
-   `CLUSTER_TYPE` enables you to deploy cluster specific resources during installation. Currently
-   the only supported types are `kind`, `aks`, or `gke`. `eks` will be supported in a future
-   release.
+```bash
+up space init --token-file=key.json "v${VERSION_NUM}" --set account=${UPBOUND_ACCOUNT}
+```
 
-   > NOTE: if you are deploying into AKS, this CLUSTER*TYPE \_must* be 'aks'.
+You sould now be able to jump to [Create your first control plane](#create-your-first-control-plane).
 
-   ```bash
-   export VERSION_NUM=0.14.0-13.g2f2dceff
-   export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
-   export CLUSTER_TYPE=kind
-   export UPBOUND_ACCOUNT=<your upbound account>
+### Using Helm
+
+#### Installing provider-k8s and provider-helm
+1. Create ControllerConfigs for provider-helm and provider-kubernetes
+   ```yaml
+   apiVersion: pkg.crossplane.io/v1alpha1
+   kind: ControllerConfig
+   metadata:
+   name: provider-helm-hub
+   spec:
+     serviceAccountName: provider-helm-hub
+   ---
+   apiVersion: pkg.crossplane.io/v1alpha1
+   kind: ControllerConfig
+   metadata:
+     name: provider-kubernetes-hub
+   spec:
+     serviceAccountName: provider-kubernetes-hub
    ```
-
-   ```bash
-   helm -n upbound-system upgrade --install spaces oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces --version "${VERSION_NUM}" --wait \
-     --set "ingress.host=${ROUTER_HOST}" \
-     --set "clusterType=${CLUSTER_TYPE}" \
-     --set "account=${UPBOUND_ACCOUNT}"
+1. Deploy provider-kubernetes
+   ```yaml
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: crossplane-contrib-provider-kubernetes
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.7.0"
+     controllerConfigRef:
+       name: provider-kubernetes-hub
    ```
-
-1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
-   facing ingress.
-   ```bash
-   kubectl get ingress -n upbound-system mcp-router-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+1. Deploy provider-helm
+   ```yaml
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: crossplane-contrib-provider-helm
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.14.0"
+     controllerConfigRef:
+       name: provider-helm-hub
    ```
-   Add this host name as CNAME or A record for your domain.
-
-## Using Same Cluster as Control Plane Space
-
-The pods of control planes can be deployed to many clusters which are
-called control plane spaces.
-
-In this section, we'll use our existing cluster as the one and only
-control plane space for brevity.
 
 1. Create `ProviderConfig`s for Helm and Kubernetes providers to deploy host
    cluster services to the existing cluster.
@@ -152,7 +176,37 @@ control plane space for brevity.
    done
    ```
 
-1. Create your first control plane.
+#### Helm install
+
+1. Install `spaces`. In a local cluster, you don't need to change `ROUTER_HOST` 
+   but if you are deploying to a remote cluster, it needs to be **a domain you own** so
+   that you can add a public DNS record for `kubectl` requests to find the router,
+   hence the control plane instance.
+
+   `CLUSTER_TYPE` enables you to deploy cluster specific resources during 
+   installation. Currently the only supported types are `kind`, `aks`, or 
+   `gke`. `eks` will be supported in a future release.
+
+   ```bash
+   export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
+   export CLUSTER_TYPE=kind
+   ```
+
+   ```bash
+   helm -n upbound-system upgrade --install spaces oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces --version "${VERSION_NUM}" --wait \
+     --set "ingress.host=${ROUTER_HOST}" \
+     --set "clusterType=${CLUSTER_TYPE}" \
+     --set "account=${UPBOUND_ACCOUNT}"
+   ```
+
+1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
+   facing ingress.
+   ```bash
+   kubectl get ingress -n upbound-system mcp-router-ingress -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+   ```
+   Add this host name as CNAME or A record for your domain.
+
+## Create your first control plane.
 
    ```bash
    cat <<EOF | kubectl apply -f -
