@@ -63,6 +63,65 @@ tokens you have received.
 export VERSION_NUM=0.14.0-13.g2f2dceff
 ```
 
+1. (Non-kind Cluster) Create an Ingress:
+   By default, an ingress is not created; any Kubernetes ingress provider should work just fine.
+   However, spaces expects that a Service pointing to the ingress controller/pod be:
+   - in the `ingress-nginx` namespace
+   - be named `ingress-nginx-controller`
+   Note: we expect that this requirement will be changed in the future.
+
+   If you need an Ingress provider, Upbound recommends Nginx as a starting point. To install:
+   ```bash
+    helm repo add ngnix https://kubernetes.github.io/ingress-nginx
+    helm repo update
+    helm install -n ingress --create-namespace \
+        nginx-ingress nginx/ingress-nginx
+    ```
+
+   Then, to create the Service, run:
+   ```
+   kubectl apply -f-<<EOM
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: ingress-nginx-controller
+      namespace: ingress-nginx
+    spec:
+      allocateLoadBalancerNodePorts: true
+      externalTrafficPolicy: Cluster
+      internalTrafficPolicy: Cluster
+      ipFamilies:
+      - IPv4
+      ipFamilyPolicy: SingleStack
+      ports:
+      - name: http
+        port: 80
+        protocol: TCP
+        targetPort: http
+      - name: https
+        port: 443
+        protocol: TCP
+        targetPort: https
+      selector:
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/instance: nginx-ingress
+        app.kubernetes.io/name: ingress-nginx
+      sessionAffinity: None
+      type: LoadBalancer
+    EOM
+    ```
+
+1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
+   facing ingress. To get the IP address for the Ingress, run:
+   ```bash
+   kubectl get ingress \
+        -n upbound-system mxe-router-ingress \
+        -o jsonpath='{.status.loadBalancer.ingress[0].ip}
+   ```
+   If the above command doesn't return an IP address then your IP Address provider may not have
+   allocated an address yet. Otherwise, set the IP address as an A record for the DNS hostname
+   selected the `Install MXP` step.
+   
 ### Using Up CLI
 
 The `up` CLI today will give you the most batteries included experience we can
