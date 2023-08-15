@@ -58,10 +58,27 @@ tokens you have received.
      ```bash
      cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
      ```
+
 #### Set the target version
 ```
 export VERSION_NUM=0.14.0-13.g2f2dceff
 ```
+
+### Using Up CLI
+
+The `up` CLI today will give you the most batteries included experience we can
+offer. It will detect with certain prerequisites are not met and prompt you to
+install them in order to move forward.
+
+```bash
+up space init --token-file=key.json "v${VERSION_NUM}" --set account=${UPBOUND_ACCOUNT}
+```
+
+You sould now be able to jump to [Create your first control plane](#create-your-first-control-plane).
+
+### Using Helm
+
+#### Provision Ingress to the Cluster.
 
 1. (Non-kind Cluster) Create an Ingress:
    By default, an ingress is not created; any Kubernetes ingress provider should work just fine.
@@ -121,20 +138,6 @@ export VERSION_NUM=0.14.0-13.g2f2dceff
    If the above command doesn't return an IP address then your IP Address provider may not have
    allocated an address yet. Otherwise, set the IP address as an A record for the DNS hostname
    selected the `Install MXP` step.
-   
-### Using Up CLI
-
-The `up` CLI today will give you the most batteries included experience we can
-offer. It will detect with certain prerequisites are not met and prompt you to
-install them in order to move forward.
-
-```bash
-up space init --token-file=key.json "v${VERSION_NUM}" --set account=${UPBOUND_ACCOUNT}
-```
-
-You sould now be able to jump to [Create your first control plane](#create-your-first-control-plane).
-
-### Using Helm
 
 #### Installing provider-k8s and provider-helm
 1. Create ControllerConfigs for provider-helm and provider-kubernetes
