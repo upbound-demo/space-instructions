@@ -53,7 +53,7 @@ tokens you have received.
 
 ### MXP Provisioning Machinery
 
-1. Install `mxp`. In a local cluster, you don't need to change `ROUTER_HOST` but
+1. Install `spaces`. In a local cluster, you don't need to change `ROUTER_HOST` but
    if you are deploying to a remote cluster, it needs to be **a domain you own** so
    that you can add a public DNS record for `kubectl` requests to find the router,
    hence the control plane instance.
@@ -72,7 +72,7 @@ tokens you have received.
    ```
 
    ```bash
-   helm -n upbound-system upgrade --install mxe oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces --version "${VERSION_NUM}" --wait \
+   helm -n upbound-system upgrade --install spaces oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces --version "${VERSION_NUM}" --wait \
      --set "ingress.host=${ROUTER_HOST}" \
      --set "clusterType=${CLUSTER_TYPE}" \
      --set "account=${UPBOUND_ACCOUNT}"
