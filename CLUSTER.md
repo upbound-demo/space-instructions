@@ -71,7 +71,13 @@
    helm upgrade --install ingress-nginx ingress-nginx \
      --create-namespace --namespace ingress-nginx \
      --repo https://kubernetes.github.io/ingress-nginx \
-     --values ingress-nginx-aws.yaml
+     --set 'controller.service.type=LoadBalancer' \
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-type=external' \
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-scheme=internet-facing' \
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-nlb-target-type=ip' \
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-healthcheck-protocol=http' \
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-healthcheck-path=/healthz' \
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-healthcheck-port=10254'
    ```
 
 1. Configure the self-signed certificate issuer.
@@ -85,101 +91,6 @@
      --namespace upbound-system --create-namespace \
      --version v1.12.2-up.2 \
      --wait
-   ```
-
-1. Install Provider AWS. It will be needed to configure IRSA for AWS
-   providers in each control plane.
-   ```bash
-   export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-   export OIDC_PROVIDER=$(aws eks describe-cluster --name ${CLUSTER_NAME} --region ${REGION} --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
-   ```
-
-   Create a policy with permissions to create policies and roles.
-   ```bash
-   cat > /tmp/iam-policy.json <<EOF
-   {
-       "Version": "2012-10-17",
-       "Statement": [
-           {
-               "Effect": "Allow",
-               "Action": [
-                   "iam:*"
-               ],
-               "Resource": "*"
-           }
-       ]
-   }
-   EOF
-   ```
-   ```bash
-   aws iam create-policy --policy-name provider-aws-iam-full --policy-document file:///tmp/iam-policy.json
-   ```
-   Create the IAM Role to be used by the service account of provider-aws-iam.
-   ```bash
-   cat > /tmp/trust-relationship.json <<EOF
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Principal": {
-           "Federated": "arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${OIDC_PROVIDER}"
-         },
-         "Action": "sts:AssumeRoleWithWebIdentity",
-         "Condition": {
-           "StringLike": {
-             "${OIDC_PROVIDER}:aud": "sts.amazonaws.com",
-             "${OIDC_PROVIDER}:sub": "system:serviceaccount:upbound-system:provider-aws-iam-*"
-           }
-         }
-       }
-     ]
-   }
-   EOF
-   ```
-   ```bash
-   aws iam create-role --role-name ${CLUSTER_NAME}-provider-aws-iam --assume-role-policy-document file:///tmp/trust-relationship.json --description "The role for the provider-aws-iam running in the main cluster."
-   ```
-   ```bash
-   aws iam attach-role-policy --role-name ${CLUSTER_NAME}-provider-aws-iam --policy-arn=arn:aws:iam::${AWS_ACCOUNT_ID}:policy/provider-aws-iam-full
-   ```
-
-   Install the provider-aws-iam and configure it to assume the role we just created.
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: pkg.crossplane.io/v1
-   kind: Provider
-   metadata:
-     name: provider-aws-iam
-   spec:
-     package: xpkg.upbound.io/upbound/provider-aws-iam:v0.38.0
-     controllerConfigRef:
-       name: irsa
-   ---
-   apiVersion: pkg.crossplane.io/v1alpha1
-   kind: ControllerConfig
-   metadata:
-     name: irsa
-     annotations:
-       eks.amazonaws.com/role-arn: arn:aws:iam::${AWS_ACCOUNT_ID}:role/${CLUSTER_NAME}-provider-aws-iam
-   spec: {}
-   EOF
-   ```
-   ```bash
-   kubectl wait provider.pkg.crossplane.io/provider-aws-iam \
-     --for=condition=Healthy \
-     --timeout=360s
-   ```
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: aws.upbound.io/v1beta1
-   kind: ProviderConfig
-   metadata:
-     name: default
-   spec:
-     credentials:
-       source: IRSA
-   EOF
    ```
 
  The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
