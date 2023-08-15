@@ -61,7 +61,7 @@ tokens you have received.
 
 #### Set the target version
 ```
-export VERSION_NUM=0.14.0-13.g2f2dceff
+export VERSION_NUM=0.15.0
 ```
 
 ### Using Up CLI
