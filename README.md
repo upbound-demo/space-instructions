@@ -72,7 +72,7 @@ tokens you have received.
    ```
 
    ```bash
-   helm -n upbound-system upgrade --install mxe oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/mxe --version "${VERSION_NUM}" --wait \
+   helm -n upbound-system upgrade --install mxe oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces --version "${VERSION_NUM}" --wait \
      --set "ingress.host=${ROUTER_HOST}" \
      --set "clusterType=${CLUSTER_TYPE}" \
      --set "account=${UPBOUND_ACCOUNT}"
