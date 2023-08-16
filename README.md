@@ -78,56 +78,6 @@ You sould now be able to jump to [Create your first control plane](#create-your-
 
 ### Using Helm
 
-#### Provision Ingress to the Cluster.
-
-1. (Non-kind Cluster) Create an Ingress:
-   By default, an ingress is not created; any Kubernetes ingress provider should work just fine.
-   However, spaces expects that a Service pointing to the ingress controller/pod be:
-   - in the `ingress-nginx` namespace
-   - be named `ingress-nginx-controller`
-   Note: we expect that this requirement will be changed in the future.
-
-   If you need an Ingress provider, Upbound recommends Nginx as a starting point. To install:
-   ```bash
-   helm repo add nginx https://kubernetes.github.io/ingress-nginx
-   helm repo update
-   helm install -n ingress-nginx --create-namespace \
-        ingress-nginx nginx/ingress-nginx
-    ```
-
-   Then, to create the Service, run:
-   ```bash
-   cat <<EOF | eksctl create cluster -f -
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: ingress-nginx-controller
-     namespace: ingress-nginx
-   spec:
-     allocateLoadBalancerNodePorts: true
-     externalTrafficPolicy: Cluster
-     internalTrafficPolicy: Cluster
-     ipFamilies:
-     - IPv4
-     ipFamilyPolicy: SingleStack
-     ports:
-     - name: http
-       port: 80
-       protocol: TCP
-       targetPort: http
-     - name: https
-       port: 443
-       protocol: TCP
-       targetPort: https
-     selector:
-       app.kubernetes.io/component: controller
-       app.kubernetes.io/instance: nginx-ingress
-       app.kubernetes.io/name: ingress-nginx
-     sessionAffinity: None
-     type: LoadBalancer
-   EOF
-   ```
-
 #### Helm install
 
 1. Install `spaces`. In a local cluster, you don't need to change `ROUTER_HOST` 

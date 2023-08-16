@@ -211,6 +211,17 @@
    az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME}
    ```
 
+1. Install ingress-nginx.
+   ```bash
+   helm upgrade --install ingress-nginx ingress-nginx \
+     --create-namespace --namespace ingress-nginx \
+     --repo https://kubernetes.github.io/ingress-nginx \
+     --version 4.7.1 \
+     --set 'controller.service.type=LoadBalancer' \
+     --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
+     --wait
+   ```
+
 1. Install cert-manager.
    ```bash
    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.3/cert-manager.yaml
@@ -334,6 +345,16 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
 1. Acquire updated kubeconfig
    ```bash
    gcloud container clusters get-credentials ${CLUSTER_NAME} --zone=${LOCATION}
+   ```
+
+1. Install ingress-nginx.
+   ```bash
+   helm upgrade --install ingress-nginx ingress-nginx \
+     --create-namespace --namespace ingress-nginx \
+     --repo https://kubernetes.github.io/ingress-nginx \
+     --version 4.7.1 \
+     --set 'controller.service.type=LoadBalancer' \
+     --wait
    ```
 
 1. Install cert-manager.
@@ -469,6 +490,17 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    ```
    ```bash
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
+   ```
+
+1. Install ingress-nginx.
+   ```bash
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/kind/deploy.yaml
+   ```
+   ```bash
+   kubectl wait --namespace ingress-nginx \
+     --for=condition=ready pod \
+     --selector=app.kubernetes.io/component=controller \
+     --timeout=90s 
    ```
 
 1. Install Crossplane.
