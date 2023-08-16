@@ -89,15 +89,15 @@ You sould now be able to jump to [Create your first control plane](#create-your-
 
    If you need an Ingress provider, Upbound recommends Nginx as a starting point. To install:
    ```bash
-  helm repo add nginx https://kubernetes.github.io/ingress-nginx
-  helm repo update
-  helm install -n ingress-nginx --create-namespace \
+   helm repo add nginx https://kubernetes.github.io/ingress-nginx
+   helm repo update
+   helm install -n ingress-nginx --create-namespace \
         ingress-nginx nginx/ingress-nginx
     ```
 
    Then, to create the Service, run:
    ```bash
-   kubectl apply -f -<<EOM
+   cat <<EOF | eksctl create cluster -f -
    apiVersion: v1
    kind: Service
    metadata:
@@ -125,106 +125,7 @@ You sould now be able to jump to [Create your first control plane](#create-your-
        app.kubernetes.io/name: ingress-nginx
      sessionAffinity: None
      type: LoadBalancer
-   EOM
-    ```
-
-#### Installing provider-k8s and provider-helm
-1. Create ControllerConfigs for provider-helm and provider-kubernetes
-   ```yaml
-   apiVersion: pkg.crossplane.io/v1alpha1
-   kind: ControllerConfig
-   metadata:
-   name: provider-helm-hub
-   spec:
-     serviceAccountName: provider-helm-hub
-   ---
-   apiVersion: pkg.crossplane.io/v1alpha1
-   kind: ControllerConfig
-   metadata:
-     name: provider-kubernetes-hub
-   spec:
-     serviceAccountName: provider-kubernetes-hub
-   ```
-1. Deploy provider-kubernetes
-   ```yaml
-   apiVersion: pkg.crossplane.io/v1
-   kind: Provider
-   metadata:
-     name: crossplane-contrib-provider-kubernetes
-   spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.7.0"
-     controllerConfigRef:
-       name: provider-kubernetes-hub
-   ```
-1. Deploy provider-helm
-   ```yaml
-   apiVersion: pkg.crossplane.io/v1
-   kind: Provider
-   metadata:
-     name: crossplane-contrib-provider-helm
-   spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.14.0"
-     controllerConfigRef:
-       name: provider-helm-hub
-   ```
-
-1. Create `ProviderConfig`s for Helm and Kubernetes providers to deploy host
-   cluster services to the existing cluster.
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: helm.crossplane.io/v1beta1
-   kind: ProviderConfig
-   metadata:
-     name: upbound-cluster
-   spec:
-    credentials:
-       source: InjectedIdentity
-   ---
-   apiVersion: kubernetes.crossplane.io/v1alpha1
-   kind: ProviderConfig
-   metadata:
-     name: upbound-cluster
-   spec:
-     credentials:
-       source: InjectedIdentity
    EOF
-   ```
-1. We need to give necessary permissions to both provider-kubernetes and
-   provider-helm service accounts to be able to install control plane space
-   services to the cluster. If it wasn't the same cluster, we'd have to create
-   `ProviderConfig`s that point to a kubeconfig with enough permissions.
-   ```bash
-   PROVIDERS=(provider-kubernetes provider-helm)
-   for PROVIDER in ${PROVIDERS[@]}; do
-     cat <<EOF | kubectl apply -f -
-   apiVersion: v1
-   kind: ServiceAccount
-   metadata:
-     name: $PROVIDER
-     namespace: upbound-system
-   ---
-   apiVersion: rbac.authorization.k8s.io/v1
-   kind: ClusterRoleBinding
-   metadata:
-     name: $PROVIDER
-   subjects:
-     - kind: ServiceAccount
-       name: $PROVIDER
-       namespace: upbound-system
-   roleRef:
-     kind: ClusterRole
-     name: cluster-admin
-     apiGroup: rbac.authorization.k8s.io
-   ---
-   apiVersion: pkg.crossplane.io/v1alpha1
-   kind: ControllerConfig
-   metadata:
-     name: $PROVIDER-incluster
-   spec:
-     serviceAccountName: $PROVIDER
-   EOF
-     kubectl patch provider.pkg.crossplane.io "crossplane-contrib-${PROVIDER}" --type merge -p "{\"spec\": {\"controllerConfigRef\": {\"name\": \"$PROVIDER-incluster\"}}}"
-   done
    ```
 
 #### Helm install
