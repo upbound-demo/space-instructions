@@ -53,7 +53,10 @@
 
 1. Install cert-manager.
    ```bash
-   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.3/cert-manager.yaml
+   ```
+   ```bash
+   kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
 
 1. Install ALB Load Balancer.
@@ -71,25 +74,23 @@
    helm upgrade --install ingress-nginx ingress-nginx \
      --create-namespace --namespace ingress-nginx \
      --repo https://kubernetes.github.io/ingress-nginx \
+     --version 4.7.1 \
      --set 'controller.service.type=LoadBalancer' \
      --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-type=external' \
      --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-scheme=internet-facing' \
      --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-nlb-target-type=ip' \
      --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-healthcheck-protocol=http' \
      --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-healthcheck-path=/healthz' \
-     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-healthcheck-port=10254'
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-healthcheck-port=10254' \
+     --wait
    ```
 
-1. Configure the self-signed certificate issuer.
-   ```bash
-   kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
-   ```
 1. Install Crossplane.
    ```bash
    helm upgrade --install crossplane universal-crossplane \
      --repo https://charts.upbound.io/stable \
      --namespace upbound-system --create-namespace \
-     --version v1.12.2-up.2 \
+     --version v1.13.2-up.1 \
      --wait
    ```
 
@@ -97,45 +98,49 @@
 
 ## Azure AKS
 1. export common variables
-  ```bash
-  export RESOURCE_GROUP_NAME=johndoe-plays-1
-  export CLUSTER_NAME=johndoe-plays-1
-  export LOCATION=westus
-  ```
+   ```bash
+   export RESOURCE_GROUP_NAME=johndoe-plays-1
+   export CLUSTER_NAME=johndoe-plays-1
+   export LOCATION=westus
+   ```
 
 1. Provision a new resourceGroup
-  ```bash
-  az group create --name ${RESOURCE_GROUP_NAME} --location ${LOCATION}
-  ```
+   ```bash
+   az group create --name ${RESOURCE_GROUP_NAME} --location ${LOCATION}
+   ```
 
 1. Provision a new `AKS` cluster.
-  ```bash
-  az aks create -g ${RESOURCE_GROUP_NAME} -n ${CLUSTER_NAME} \
-    --enable-managed-identity \
-    --node-count 3 \
-    --node-vm-size Standard_D4s_v4 \
-    --enable-addons monitoring \
-    --enable-msi-auth-for-monitoring \
-    --generate-ssh-keys \
-    --network-plugin kubenet \
-    --network-policy calico
-  ```
+   ```bash
+   az aks create -g ${RESOURCE_GROUP_NAME} -n ${CLUSTER_NAME} \
+     --enable-managed-identity \
+     --node-count 3 \
+     --node-vm-size Standard_D4s_v4 \
+     --enable-addons monitoring \
+     --enable-msi-auth-for-monitoring \
+     --generate-ssh-keys \
+     --network-plugin kubenet \
+     --network-policy calico
+   ```
 
 1. Acquire updated kubeconfig
-  ```bash
-  az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME}
-  ```
+   ```bash
+   az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME}
+   ```
 
 1. Install cert-manager.
    ```bash
-   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.3/cert-manager.yaml
    ```
+   ```bash
+   kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
+   ```
+
 1. Install Crossplane.
    ```bash
    helm upgrade --install crossplane universal-crossplane \
      --repo https://charts.upbound.io/stable \
      --namespace upbound-system --create-namespace \
-     --version v1.12.2-up.2 \
+     --version v1.13.2-up.1 \
      --wait
    ```
 
@@ -143,35 +148,39 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
 
 ## Google Cloud GKE
 1. export common variables
-  ```bash
-  export CLUSTER_NAME=johndoe-plays-1
-  export LOCATION=us-west1-a
-  ```
+   ```bash
+   export CLUSTER_NAME=johndoe-plays-1
+   export LOCATION=us-west1-a
+   ```
 
 1. Provision a new `GKE` cluster.
-  ```bash
-  gcloud container clusters create ${CLUSTER_NAME} \
-    --enable-network-policy \
-    --num-nodes=3 \
-    --zone=${LOCATION} \
-    --machine-type=e2-standard-16
-  ```
+   ```bash
+   gcloud container clusters create ${CLUSTER_NAME} \
+     --enable-network-policy \
+     --num-nodes=3 \
+     --zone=${LOCATION} \
+     --machine-type=e2-standard-16
+   ```
 
 1. Acquire updated kubeconfig
-  ```bash
-  gcloud container clusters get-credentials ${CLUSTER_NAME} --zone=${LOCATION}
-  ```
+   ```bash
+   gcloud container clusters get-credentials ${CLUSTER_NAME} --zone=${LOCATION}
+   ```
 
 1. Install cert-manager.
    ```bash
-   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.3/cert-manager.yaml
    ```
+   ```bash
+   kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
+   ```
+
 1. Install Crossplane.
    ```bash
    helm upgrade --install crossplane universal-crossplane \
      --repo https://charts.upbound.io/stable \
      --namespace upbound-system --create-namespace \
-     --version v1.12.2-up.2 \
+     --version v1.13.2-up.1 \
      --wait
    ```
 
@@ -202,14 +211,18 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
 
 1. Install cert-manager.
    ```bash
-   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.3/cert-manager.yaml
    ```
+   ```bash
+   kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
+   ```
+
 1. Install Crossplane.
    ```bash
    helm upgrade --install crossplane universal-crossplane \
      --repo https://charts.upbound.io/stable \
      --namespace upbound-system --create-namespace \
-     --version v1.12.2-up.2 \
+     --version v1.13.2-up.1 \
      --wait
    ```
 
