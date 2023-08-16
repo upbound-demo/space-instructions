@@ -22,7 +22,7 @@
      version: "1.26"
    managedNodeGroups:
      - name: ng-1
-       instanceType: m5.4xlarge
+       instanceType: m5.xlarge
        desiredCapacity: 3
        volumeSize: 100
        iam:
