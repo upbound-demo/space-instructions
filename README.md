@@ -95,25 +95,25 @@ up space init --token-file=key.json "v${VERSION_NUM}" \
   --set "account=${UPBOUND_ACCOUNT}"
 ```
 
-1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
-   facing ingress. To get the address for the Ingress, run either of the
-   following:
-   ```bash
-   # For GKE and AKS
-   kubectl get ingress \
-        -n upbound-system mxe-router-ingress \
-        -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-   ```
-   ```bash
-    # For EKS
-    kubectl get ingress \
-        -n upbound-system mxe-router-ingress \
-        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-   ```
-   If the above command doesn't return a load balancer address then your provider
-   may not have allocated it yet. Once it is available, add a DNS record for the
-   `ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
-   address, add an `A` record, if it's a domain name, add a `CNAME` record.
+(Non-kind Cluster) Create a DNS record for the load balancer of the public
+facing ingress. To get the address for the Ingress, run either of the
+following:
+```bash
+# For GKE and AKS
+kubectl get ingress \
+  -n upbound-system mxe-router-ingress \
+  -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
+```bash
+# For EKS
+kubectl get ingress \
+  -n upbound-system mxe-router-ingress \
+  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+If the command above doesn't return a load balancer address then your provider
+may not have allocated it yet. Once it is available, add a DNS record for the
+`ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
+address, add an `A` record, if it's a domain name, add a `CNAME` record.
 
 You should now be able to jump to [Create your first control plane](#create-your-first-control-plane).
 
@@ -128,37 +128,38 @@ you more control over the installation process.
 Follow instructions [here](./CLUSTER.md) to prepare your cluster.
 
 #### Installation
-1. Install `spaces`.
 
-   ```bash
-   helm -n upbound-system upgrade --install spaces \
-     oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces \
-     --version "${VERSION_NUM}" \
-     --set "ingress.host=${ROUTER_HOST}" \
-     --set "clusterType=${CLUSTER_TYPE}" \
-     --set "account=${UPBOUND_ACCOUNT}" \
-     --wait
-   ```
+Install `spaces` Helm chart.
 
-1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
-   facing ingress. To get the address for the Ingress, run either of the
-   following:
-   ```bash
-   # For GKE and AKS
-   kubectl get ingress \
-        -n upbound-system mxe-router-ingress \
-        -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-   ```
-   ```bash
-    # For EKS
-    kubectl get ingress \
-        -n upbound-system mxe-router-ingress \
-        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-   ```
-   If the above command doesn't return a load balancer address then your provider
-   may not have allocated it yet. Once it is available, add a DNS record for the
-   `ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
-   address, add an `A` record, if it's a domain name, add a `CNAME` record.
+```bash
+helm -n upbound-system upgrade --install spaces \
+  oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces \
+  --version "${VERSION_NUM}" \
+  --set "ingress.host=${ROUTER_HOST}" \
+  --set "clusterType=${CLUSTER_TYPE}" \
+  --set "account=${UPBOUND_ACCOUNT}" \
+  --wait
+```
+
+(Non-kind Cluster) Create a DNS record for the load balancer of the public
+facing ingress. To get the address for the Ingress, run either of the
+following:
+```bash
+# For GKE and AKS
+kubectl get ingress \
+  -n upbound-system mxe-router-ingress \
+  -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
+```bash
+# For EKS
+kubectl get ingress \
+  -n upbound-system mxe-router-ingress \
+  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+If the command above doesn't return a load balancer address then your provider
+may not have allocated it yet. Once it is available, add a DNS record for the
+`ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
+address, add an `A` record, if it's a domain name, add a `CNAME` record.
    
 
 ## Create Your First Control Plane
