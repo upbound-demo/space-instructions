@@ -5,19 +5,16 @@
 service is generally available, this specific mode is not yet production-ready
 and the APIs may change any time.
 
-## Setup
+# Getting Started
 
-Assumes the cluster components mentioned [here](./CLUSTER.md) are installed.
+* [Pre-requisites](#pre-requisites)
+* Install Spaces
+  * [Using Up CLI](#using-up-cli)
+  * [Using Helm](#using-helm)
+* [Create your first control plane](#create-your-first-control-plane)
+* [Access your control plane](#access-your-control-plane)
 
-## Installation
-
-Installation is broken down into the following sections:
-
-* [Authentication](#authentication)
-* [Using Up CLI](#using-up-cli)
-* [Using Helm](#using-helm)
-
-### Prerequistes
+## Pre-requisites
 
 #### Acquire your Upbound Account
 The Upbound representative you've been working with should provide an 
@@ -26,7 +23,7 @@ next step.
 
 Once you have the Upbound Account string set the following environment 
 variable to be used in future steps
-```
+```bash
 export UPBOUND_ACCOUNT=<your upbound account>
 ```
 
@@ -60,9 +57,35 @@ tokens you have received.
      ```
 
 #### Set the target version
-```
+
+This is the Spaces version to install.
+```bash
 export VERSION_NUM=0.15.0
 ```
+
+#### Set the router host and cluster type
+
+The `ROUTER_HOST` is the domain name that will be used to access the control
+plane instances. It will be used by the ingress controller to route requests.
+Unless you're using a `kind` cluster, you will need to add DNS entries for this
+domain to point to the load balancer deployed by the ingress controller, so make
+sure you use one that you own.
+```bash
+# For kind
+export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
+
+# For eks, aks or gke
+# export ROUTER_HOST=proxy.example.com
+```
+
+The `CLUSTER_TYPE` is the type of the cluster you're deploying Spaces into. It
+can have the following values: `kind`, `eks`, `aks`, or `gke`. Support for more
+types will be added in the future.
+```bash
+export CLUSTER_TYPE=kind # can be "eks", "aks" or "gke"
+```
+
+## Install Spaces
 
 ### Using Up CLI
 
@@ -70,29 +93,49 @@ The `up` CLI today will give you the most batteries included experience we can
 offer. It will detect with certain prerequisites are not met and prompt you to
 install them in order to move forward.
 
+Assuming you have your kubectl context set to the cluster you want to install
+Spaces into, run the following command:
 ```bash
-up space init --token-file=key.json "v${VERSION_NUM}" --set account=${UPBOUND_ACCOUNT}
+up space init --token-file=key.json "v${VERSION_NUM}" \
+  --set "ingress.host=${ROUTER_HOST}" \
+  --set "clusterType=${CLUSTER_TYPE}" \
+  --set "account=${UPBOUND_ACCOUNT}"
 ```
 
-You sould now be able to jump to [Create your first control plane](#create-your-first-control-plane).
+1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
+   facing ingress. To get the address for the Ingress, run either of the
+   following:
+   ```bash
+   # For GKE and AKS
+   kubectl get ingress \
+        -n upbound-system mxe-router-ingress \
+        -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+   ```
+   ```bash
+    # For EKS
+    kubectl get ingress \
+        -n upbound-system mxe-router-ingress \
+        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+   ```
+   If the above command doesn't return a load balancer address then your provider
+   may not have allocated it yet. Once it is available, add a DNS record for the
+   `ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
+   address, add an `A` record, if it's a domain name, add a `CNAME` record.
+
+You should now be able to jump to [Create your first control plane](#create-your-first-control-plane).
 
 ### Using Helm
 
-#### Helm install
+#### Setup
 
-1. Install `spaces`. In a local cluster, you don't need to change `ROUTER_HOST` 
-   but if you are deploying to a remote cluster, it needs to be **a domain you own** so
-   that you can add a public DNS record for `kubectl` requests to find the router,
-   hence the control plane instance.
+Up CLI installs all the pre-requisites to your cluster before starting the
+installation. With Helm method, you need install them separately which gives you
+more control over the installation process.
 
-   `CLUSTER_TYPE` enables you to deploy cluster specific resources during 
-   installation. Currently the only supported types are `kind`, `aks`, or 
-   `gke`. `eks` will be supported in a future release.
+Follow instructions [here](./CLUSTER.md) to prepare your cluster.
 
-   ```bash
-   export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
-   export CLUSTER_TYPE=kind
-   ```
+#### Installation
+1. Install `spaces`.
 
    ```bash
    helm -n upbound-system upgrade --install spaces oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces --version "${VERSION_NUM}" --wait \
@@ -102,17 +145,27 @@ You sould now be able to jump to [Create your first control plane](#create-your-
    ```
 
 1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
-   facing ingress. To get the IP address for the Ingress, run:
+   facing ingress. To get the address for the Ingress, run either of the
+   following:
    ```bash
+   # For GKE and AKS
    kubectl get ingress \
         -n upbound-system mxe-router-ingress \
-        -o jsonpath='{.status.loadBalancer.ingress[0].ip}
+        -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
    ```
-   If the above command doesn't return an IP address then your IP Address provider may not have
-   allocated an address yet. Otherwise, set the IP address as an A record for the DNS hostname
-   selected the `Install MXP` step.
+   ```bash
+    # For EKS
+    kubectl get ingress \
+        -n upbound-system mxe-router-ingress \
+        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+   ```
+   If the above command doesn't return a load balancer address then your provider
+   may not have allocated it yet. Once it is available, add a DNS record for the
+   `ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
+   address, add an `A` record, if it's a domain name, add a `CNAME` record.
+   
 
-## Create your first control plane.
+## Create Your First Control Plane
 
    ```bash
    cat <<EOF | kubectl apply -f -
@@ -133,7 +186,7 @@ You sould now be able to jump to [Create your first control plane](#create-your-
    kubectl wait controlplane ctp1 --for condition=Ready=True --timeout=360s
    ```
 
-## Access ControlPlane Instance
+## Access Your Control Plane
 
 ```bash
 kubectl get secret kubeconfig-ctp1 -n default -o jsonpath='{.data.kubeconfig}' | base64 -d > /tmp/ctp1.yaml
@@ -142,8 +195,3 @@ kubectl get secret kubeconfig-ctp1 -n default -o jsonpath='{.data.kubeconfig}' |
 ```bash
 KUBECONFIG=/tmp/ctp1.yaml kubectl get xrd
 ```
-
-# GitOps
-
-If you are using an AWS cluster, see the instructions
-[here](https://github.com/upbound-demo/environment-aws/)
