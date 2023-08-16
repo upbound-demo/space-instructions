@@ -53,7 +53,7 @@ tokens you have received.
 
 This is the Spaces version to install.
 ```bash
-export VERSION_NUM=0.15.0
+export VERSION_NUM=0.15.1
 ```
 
 #### Set the router host and cluster type
@@ -62,7 +62,7 @@ The `ROUTER_HOST` is the domain name that will be used to access the control
 plane instances. It will be used by the ingress controller to route requests.
 Unless you're using a `kind` cluster, you will need to add DNS entries for this
 domain to point to the load balancer deployed by the ingress controller, so make
-sure you use one that you own.
+sure you use a domain that you own.
 ```bash
 # For kind
 export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
@@ -122,8 +122,8 @@ You should now be able to jump to [Create your first control plane](#create-your
 #### Setup
 
 Up CLI installs all the pre-requisites to your cluster before starting the
-installation. With Helm method, you need install them separately which gives you
-more control over the installation process.
+installation. With Helm method, you need to install them separately which gives
+you more control over the installation process.
 
 Follow instructions [here](./CLUSTER.md) to prepare your cluster.
 
@@ -131,10 +131,13 @@ Follow instructions [here](./CLUSTER.md) to prepare your cluster.
 1. Install `spaces`.
 
    ```bash
-   helm -n upbound-system upgrade --install spaces oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces --version "${VERSION_NUM}" --wait \
+   helm -n upbound-system upgrade --install spaces \
+     oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces \
+     --version "${VERSION_NUM}" \
      --set "ingress.host=${ROUTER_HOST}" \
      --set "clusterType=${CLUSTER_TYPE}" \
-     --set "account=${UPBOUND_ACCOUNT}"
+     --set "account=${UPBOUND_ACCOUNT}" \
+     --wait
    ```
 
 1. (Non-kind Cluster) Create a DNS record for the load balancer of the public

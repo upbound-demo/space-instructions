@@ -218,7 +218,7 @@ installation of Upbound Spaces.
      --repo https://kubernetes.github.io/ingress-nginx \
      --version 4.7.1 \
      --set 'controller.service.type=LoadBalancer' \
-     --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path=/healthz' \
      --wait
    ```
 
