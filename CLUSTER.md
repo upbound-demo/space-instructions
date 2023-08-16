@@ -93,8 +93,92 @@
      --version v1.13.2-up.1 \
      --wait
    ```
-
- The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+1. Install Provider Helm and Provider Kubernetes. Spaces uses these providers
+   internally to manage resources in the cluster. We need to install these
+   providers and grant necessary permissions to create resources.
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: provider-kubernetes
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.9.0"
+   ---
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: provider-helm
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.15.0"
+   EOF
+   ```
+   Grant the provider pods permissions to create resources in the cluster.
+   ```bash
+   PROVIDERS=(provider-kubernetes provider-helm)
+   for PROVIDER in ${PROVIDERS[@]}; do
+     cat <<EOF | kubectl apply -f -
+   apiVersion: v1
+   kind: ServiceAccount
+   metadata:
+     name: $PROVIDER
+     namespace: upbound-system
+   ---
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRoleBinding
+   metadata:
+     name: $PROVIDER
+   subjects:
+     - kind: ServiceAccount
+       name: $PROVIDER
+       namespace: upbound-system
+   roleRef:
+     kind: ClusterRole
+     name: cluster-admin
+     apiGroup: rbac.authorization.k8s.io
+   ---
+   apiVersion: pkg.crossplane.io/v1alpha1
+   kind: ControllerConfig
+   metadata:
+     name: $PROVIDER-hub
+   spec:
+     serviceAccountName: $PROVIDER
+   EOF
+     kubectl patch provider.pkg.crossplane.io "${PROVIDER}" --type merge -p "{\"spec\": {\"controllerConfigRef\": {\"name\": \"$PROVIDER-hub\"}}}"
+   done
+   ```
+   Wait till the providers are ready.
+   ```bash
+   kubectl wait provider.pkg.crossplane.io/provider-helm \
+     --for=condition=Healthy \
+     --timeout=360s
+   kubectl wait provider.pkg.crossplane.io/provider-kubernetes \
+     --for=condition=Healthy \
+     --timeout=360s
+   ```
+   Create `ProviderConfig`s that will configure the providers to use
+   the cluster they're deployed into.
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: helm.crossplane.io/v1beta1
+   kind: ProviderConfig
+   metadata:
+     name: upbound-cluster
+   spec:
+    credentials:
+       source: InjectedIdentity
+   ---
+   apiVersion: kubernetes.crossplane.io/v1alpha1
+   kind: ProviderConfig
+   metadata:
+     name: upbound-cluster
+   spec:
+     credentials:
+       source: InjectedIdentity
+   EOF
+   ```
+The cluster is ready! Go to [README.md](./README.md) to continue with
+installation of Upbound Spaces.
 
 ## Azure AKS
 1. export common variables
@@ -127,6 +211,17 @@
    az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${CLUSTER_NAME}
    ```
 
+1. Install ingress-nginx.
+   ```bash
+   helm upgrade --install ingress-nginx ingress-nginx \
+     --create-namespace --namespace ingress-nginx \
+     --repo https://kubernetes.github.io/ingress-nginx \
+     --version 4.7.1 \
+     --set 'controller.service.type=LoadBalancer' \
+     --set 'controller.service.annotations.service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path=/healthz' \
+     --wait
+   ```
+
 1. Install cert-manager.
    ```bash
    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.3/cert-manager.yaml
@@ -143,8 +238,93 @@
      --version v1.13.2-up.1 \
      --wait
    ```
+1. Install Provider Helm and Provider Kubernetes. Spaces uses these providers
+   internally to manage resources in the cluster. We need to install these
+   providers and grant necessary permissions to create resources.
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: provider-kubernetes
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.9.0"
+   ---
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: provider-helm
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.15.0"
+   EOF
+   ```
+   Grant the provider pods permissions to create resources in the cluster.
+   ```bash
+   PROVIDERS=(provider-kubernetes provider-helm)
+   for PROVIDER in ${PROVIDERS[@]}; do
+     cat <<EOF | kubectl apply -f -
+   apiVersion: v1
+   kind: ServiceAccount
+   metadata:
+     name: $PROVIDER
+     namespace: upbound-system
+   ---
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRoleBinding
+   metadata:
+     name: $PROVIDER
+   subjects:
+     - kind: ServiceAccount
+       name: $PROVIDER
+       namespace: upbound-system
+   roleRef:
+     kind: ClusterRole
+     name: cluster-admin
+     apiGroup: rbac.authorization.k8s.io
+   ---
+   apiVersion: pkg.crossplane.io/v1alpha1
+   kind: ControllerConfig
+   metadata:
+     name: $PROVIDER-hub
+   spec:
+     serviceAccountName: $PROVIDER
+   EOF
+     kubectl patch provider.pkg.crossplane.io "${PROVIDER}" --type merge -p "{\"spec\": {\"controllerConfigRef\": {\"name\": \"$PROVIDER-hub\"}}}"
+   done
+   ```
+   Wait till the providers are ready.
+   ```bash
+   kubectl wait provider.pkg.crossplane.io/provider-helm \
+     --for=condition=Healthy \
+     --timeout=360s
+   kubectl wait provider.pkg.crossplane.io/provider-kubernetes \
+     --for=condition=Healthy \
+     --timeout=360s
+   ```
+   Create `ProviderConfig`s that will configure the providers to use
+   the cluster they're deployed into.
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: helm.crossplane.io/v1beta1
+   kind: ProviderConfig
+   metadata:
+     name: upbound-cluster
+   spec:
+    credentials:
+       source: InjectedIdentity
+   ---
+   apiVersion: kubernetes.crossplane.io/v1alpha1
+   kind: ProviderConfig
+   metadata:
+     name: upbound-cluster
+   spec:
+     credentials:
+       source: InjectedIdentity
+   EOF
+   ```
 
-The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+The cluster is ready! Go to [README.md](./README.md) to continue with
+installation of Upbound Spaces.
 
 ## Google Cloud GKE
 1. export common variables
@@ -159,12 +339,22 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
      --enable-network-policy \
      --num-nodes=3 \
      --zone=${LOCATION} \
-     --machine-type=e2-standard-16
+     --machine-type=e2-standard-4
    ```
 
 1. Acquire updated kubeconfig
    ```bash
    gcloud container clusters get-credentials ${CLUSTER_NAME} --zone=${LOCATION}
+   ```
+
+1. Install ingress-nginx.
+   ```bash
+   helm upgrade --install ingress-nginx ingress-nginx \
+     --create-namespace --namespace ingress-nginx \
+     --repo https://kubernetes.github.io/ingress-nginx \
+     --version 4.7.1 \
+     --set 'controller.service.type=LoadBalancer' \
+     --wait
    ```
 
 1. Install cert-manager.
@@ -183,8 +373,93 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
      --version v1.13.2-up.1 \
      --wait
    ```
+1. Install Provider Helm and Provider Kubernetes. Spaces uses these providers
+   internally to manage resources in the cluster. We need to install these
+   providers and grant necessary permissions to create resources.
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: provider-kubernetes
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.9.0"
+   ---
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: provider-helm
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.15.0"
+   EOF
+   ```
+   Grant the provider pods permissions to create resources in the cluster.
+   ```bash
+   PROVIDERS=(provider-kubernetes provider-helm)
+   for PROVIDER in ${PROVIDERS[@]}; do
+     cat <<EOF | kubectl apply -f -
+   apiVersion: v1
+   kind: ServiceAccount
+   metadata:
+     name: $PROVIDER
+     namespace: upbound-system
+   ---
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRoleBinding
+   metadata:
+     name: $PROVIDER
+   subjects:
+     - kind: ServiceAccount
+       name: $PROVIDER
+       namespace: upbound-system
+   roleRef:
+     kind: ClusterRole
+     name: cluster-admin
+     apiGroup: rbac.authorization.k8s.io
+   ---
+   apiVersion: pkg.crossplane.io/v1alpha1
+   kind: ControllerConfig
+   metadata:
+     name: $PROVIDER-hub
+   spec:
+     serviceAccountName: $PROVIDER
+   EOF
+     kubectl patch provider.pkg.crossplane.io "${PROVIDER}" --type merge -p "{\"spec\": {\"controllerConfigRef\": {\"name\": \"$PROVIDER-hub\"}}}"
+   done
+   ```
+   Wait till the providers are ready.
+   ```bash
+   kubectl wait provider.pkg.crossplane.io/provider-helm \
+     --for=condition=Healthy \
+     --timeout=360s
+   kubectl wait provider.pkg.crossplane.io/provider-kubernetes \
+     --for=condition=Healthy \
+     --timeout=360s
+   ```
+   Create `ProviderConfig`s that will configure the providers to use
+   the cluster they're deployed into.
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: helm.crossplane.io/v1beta1
+   kind: ProviderConfig
+   metadata:
+     name: upbound-cluster
+   spec:
+    credentials:
+       source: InjectedIdentity
+   ---
+   apiVersion: kubernetes.crossplane.io/v1alpha1
+   kind: ProviderConfig
+   metadata:
+     name: upbound-cluster
+   spec:
+     credentials:
+       source: InjectedIdentity
+   EOF
+   ```
 
-The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+The cluster is ready! Go to [README.md](./README.md) to continue with
+installation of Upbound Spaces.
 
 ## kind Cluster
 
@@ -217,6 +492,17 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=360s
    ```
 
+1. Install ingress-nginx.
+   ```bash
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/kind/deploy.yaml
+   ```
+   ```bash
+   kubectl wait --namespace ingress-nginx \
+     --for=condition=ready pod \
+     --selector=app.kubernetes.io/component=controller \
+     --timeout=90s 
+   ```
+
 1. Install Crossplane.
    ```bash
    helm upgrade --install crossplane universal-crossplane \
@@ -225,5 +511,90 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
      --version v1.13.2-up.1 \
      --wait
    ```
+1. Install Provider Helm and Provider Kubernetes. Spaces uses these providers
+   internally to manage resources in the cluster. We need to install these
+   providers and grant necessary permissions to create resources.
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: provider-kubernetes
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.9.0"
+   ---
+   apiVersion: pkg.crossplane.io/v1
+   kind: Provider
+   metadata:
+     name: provider-helm
+   spec:
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.15.0"
+   EOF
+   ```
+   Grant the provider pods permissions to create resources in the cluster.
+   ```bash
+   PROVIDERS=(provider-kubernetes provider-helm)
+   for PROVIDER in ${PROVIDERS[@]}; do
+     cat <<EOF | kubectl apply -f -
+   apiVersion: v1
+   kind: ServiceAccount
+   metadata:
+     name: $PROVIDER
+     namespace: upbound-system
+   ---
+   apiVersion: rbac.authorization.k8s.io/v1
+   kind: ClusterRoleBinding
+   metadata:
+     name: $PROVIDER
+   subjects:
+     - kind: ServiceAccount
+       name: $PROVIDER
+       namespace: upbound-system
+   roleRef:
+     kind: ClusterRole
+     name: cluster-admin
+     apiGroup: rbac.authorization.k8s.io
+   ---
+   apiVersion: pkg.crossplane.io/v1alpha1
+   kind: ControllerConfig
+   metadata:
+     name: $PROVIDER-hub
+   spec:
+     serviceAccountName: $PROVIDER
+   EOF
+     kubectl patch provider.pkg.crossplane.io "${PROVIDER}" --type merge -p "{\"spec\": {\"controllerConfigRef\": {\"name\": \"$PROVIDER-hub\"}}}"
+   done
+   ```
+   Wait till the providers are ready.
+   ```bash
+   kubectl wait provider.pkg.crossplane.io/provider-helm \
+     --for=condition=Healthy \
+     --timeout=360s
+   kubectl wait provider.pkg.crossplane.io/provider-kubernetes \
+     --for=condition=Healthy \
+     --timeout=360s
+   ```
+   Create `ProviderConfig`s that will configure the providers to use
+   the cluster they're deployed into.
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: helm.crossplane.io/v1beta1
+   kind: ProviderConfig
+   metadata:
+     name: upbound-cluster
+   spec:
+    credentials:
+       source: InjectedIdentity
+   ---
+   apiVersion: kubernetes.crossplane.io/v1alpha1
+   kind: ProviderConfig
+   metadata:
+     name: upbound-cluster
+   spec:
+     credentials:
+       source: InjectedIdentity
+   EOF
+   ```
 
- The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+ The cluster is ready! Go to [README.md](./README.md) to continue with
+ installation of Upbound Spaces.
