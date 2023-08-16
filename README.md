@@ -31,30 +31,23 @@ export UPBOUND_ACCOUNT=<your upbound account>
 First, you need to create image pull secrets with the Google Service Account
 tokens you have received.
 
-1. Create an image pull secret to pull images from GCR. There are two ways to
-   authenticate, you need to follow only one of the following instructions:
+1. Export the path of the service account token JSON file.
+   ```bash
+   # Change the path to where you saved the token.
+   export GCP_TOKEN_PATH="THE PATH TO YOUR GCRTOKEN FILE"
+   ```
+1. Create an image pull secret so that the cluster can pull Upbound Spaces images.
+   ```bash
+   kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
+     --docker-server=https://us-west1-docker.pkg.dev \
+     --docker-username=_json_key \
+     --docker-password="$(cat $GCP_TOKEN_PATH)"
+   ```
 
-   - (Service Account Token) Save the token to a file named `gcrtoken.json`.
-
-     ```bash
-     # Change the path to where you saved the token.
-     export GCP_TOKEN_PATH="THE PATH TO YOUR GCRTOKEN FILE"
-     ```
-
-     Run the following command.
-
-     ```bash
-     kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
-       --docker-server=https://us-west1-docker.pkg.dev \
-       --docker-username=_json_key \
-       --docker-password="$(cat $GCP_TOKEN_PATH)"
-     ```
-
-1. Log in with Helm to be able to pull chart images from GCR.
-   - (Service Account Token) Run the following command.
-     ```bash
-     cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
-     ```
+1. Log in with Helm to be able to pull chart images for the installation commands.
+   ```bash
+   cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
+   ```
 
 #### Set the target version
 

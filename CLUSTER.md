@@ -93,10 +93,9 @@
      --version v1.13.2-up.1 \
      --wait
    ```
-1. Install Providers
-   Spaces uses Provider Helm and Provider Kubernetes internally to manage
-   resources in the cluster. We need to install them and grant permissions
-   to create resources.
+1. Install Provider Helm and Provider Kubernetes. Spaces uses these providers
+   internally to manage resources in the cluster. We need to install these
+   providers and grant necessary permissions to create resources.
    ```bash
    cat <<EOF | kubectl apply -f -
    apiVersion: pkg.crossplane.io/v1
@@ -104,14 +103,14 @@
    metadata:
      name: provider-kubernetes
    spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.7.0"
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.9.0"
    ---
    apiVersion: pkg.crossplane.io/v1
    kind: Provider
    metadata:
      name: provider-helm
    spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.14.0"
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.15.0"
    EOF
    ```
    Grant the provider pods permissions to create resources in the cluster.
@@ -178,7 +177,8 @@
        source: InjectedIdentity
    EOF
    ```
- The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+The cluster is ready! Go to [README.md](./README.md) to continue with
+installation of Upbound Spaces.
 
 ## Azure AKS
 1. export common variables
@@ -238,10 +238,9 @@
      --version v1.13.2-up.1 \
      --wait
    ```
-1. Install Providers
-   Spaces uses Provider Helm and Provider Kubernetes internally to manage
-   resources in the cluster. We need to install them and grant permissions
-   to create resources.
+1. Install Provider Helm and Provider Kubernetes. Spaces uses these providers
+   internally to manage resources in the cluster. We need to install these
+   providers and grant necessary permissions to create resources.
    ```bash
    cat <<EOF | kubectl apply -f -
    apiVersion: pkg.crossplane.io/v1
@@ -249,14 +248,14 @@
    metadata:
      name: provider-kubernetes
    spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.7.0"
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.9.0"
    ---
    apiVersion: pkg.crossplane.io/v1
    kind: Provider
    metadata:
      name: provider-helm
    spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.14.0"
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.15.0"
    EOF
    ```
    Grant the provider pods permissions to create resources in the cluster.
@@ -324,7 +323,8 @@
    EOF
    ```
 
-The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+The cluster is ready! Go to [README.md](./README.md) to continue with
+installation of Upbound Spaces.
 
 ## Google Cloud GKE
 1. export common variables
@@ -339,7 +339,7 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
      --enable-network-policy \
      --num-nodes=3 \
      --zone=${LOCATION} \
-     --machine-type=e2-standard-16
+     --machine-type=e2-standard-4
    ```
 
 1. Acquire updated kubeconfig
@@ -373,10 +373,9 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
      --version v1.13.2-up.1 \
      --wait
    ```
-1. Install Providers
-   Spaces uses Provider Helm and Provider Kubernetes internally to manage
-   resources in the cluster. We need to install them and grant permissions
-   to create resources.
+1. Install Provider Helm and Provider Kubernetes. Spaces uses these providers
+   internally to manage resources in the cluster. We need to install these
+   providers and grant necessary permissions to create resources.
    ```bash
    cat <<EOF | kubectl apply -f -
    apiVersion: pkg.crossplane.io/v1
@@ -384,14 +383,14 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    metadata:
      name: provider-kubernetes
    spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.7.0"
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.9.0"
    ---
    apiVersion: pkg.crossplane.io/v1
    kind: Provider
    metadata:
      name: provider-helm
    spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.14.0"
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.15.0"
    EOF
    ```
    Grant the provider pods permissions to create resources in the cluster.
@@ -459,7 +458,8 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    EOF
    ```
 
-The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+The cluster is ready! Go to [README.md](./README.md) to continue with
+installation of Upbound Spaces.
 
 ## kind Cluster
 
@@ -511,10 +511,9 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
      --version v1.13.2-up.1 \
      --wait
    ```
-1. Install Providers
-   Spaces uses Provider Helm and Provider Kubernetes internally to manage
-   resources in the cluster. We need to install them and grant permissions
-   to create resources.
+1. Install Provider Helm and Provider Kubernetes. Spaces uses these providers
+   internally to manage resources in the cluster. We need to install these
+   providers and grant necessary permissions to create resources.
    ```bash
    cat <<EOF | kubectl apply -f -
    apiVersion: pkg.crossplane.io/v1
@@ -522,14 +521,14 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    metadata:
      name: provider-kubernetes
    spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.7.0"
+     package: "xpkg.upbound.io/crossplane-contrib/provider-kubernetes:v0.9.0"
    ---
    apiVersion: pkg.crossplane.io/v1
    kind: Provider
    metadata:
      name: provider-helm
    spec:
-     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.14.0"
+     package: "xpkg.upbound.io/crossplane-contrib/provider-helm:v0.15.0"
    EOF
    ```
    Grant the provider pods permissions to create resources in the cluster.
@@ -597,4 +596,5 @@ The cluster is ready! Go to [README.md](./README.md) to continue with installati
    EOF
    ```
 
- The cluster is ready! Go to [README.md](./README.md) to continue with installation of Upbound Spaces.
+ The cluster is ready! Go to [README.md](./README.md) to continue with
+ installation of Upbound Spaces.
