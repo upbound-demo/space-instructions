@@ -36,18 +36,6 @@ tokens you have received.
    # Change the path to where you saved the token.
    export GCP_TOKEN_PATH="THE PATH TO YOUR GCRTOKEN FILE"
    ```
-1. Create an image pull secret so that the cluster can pull Upbound Spaces images.
-   ```bash
-   kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
-     --docker-server=https://us-west1-docker.pkg.dev \
-     --docker-username=_json_key \
-     --docker-password="$(cat $GCP_TOKEN_PATH)"
-   ```
-
-1. Log in with Helm to be able to pull chart images for the installation commands.
-   ```bash
-   cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
-   ```
 
 #### Set the target version
 
@@ -87,33 +75,47 @@ offer. It will detect with certain prerequisites are not met and prompt you to
 install them in order to move forward.
 
 Assuming you have your kubectl context set to the cluster you want to install
-Spaces into, run the following command:
-```bash
-up space init --token-file=key.json "v${VERSION_NUM}" \
-  --set "ingress.host=${ROUTER_HOST}" \
-  --set "clusterType=${CLUSTER_TYPE}" \
-  --set "account=${UPBOUND_ACCOUNT}"
-```
+Spaces into, run the following commands:
 
-(Non-kind Cluster) Create a DNS record for the load balancer of the public
-facing ingress. To get the address for the Ingress, run either of the
-following:
-```bash
-# For GKE and AKS
-kubectl get ingress \
-  -n upbound-system mxe-router-ingress \
-  -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-```
-```bash
-# For EKS
-kubectl get ingress \
-  -n upbound-system mxe-router-ingress \
-  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-```
-If the command above doesn't return a load balancer address then your provider
-may not have allocated it yet. Once it is available, add a DNS record for the
-`ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
-address, add an `A` record, if it's a domain name, add a `CNAME` record.
+1. Create an image pull secret so that the cluster can pull Upbound Spaces images.
+   ```bash
+   kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
+     --docker-server=https://us-west1-docker.pkg.dev \
+     --docker-username=_json_key \
+     --docker-password="$(cat $GCP_TOKEN_PATH)"
+   ```
+
+1. Log in with Helm to be able to pull chart images for the installation commands.
+   ```bash
+   cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
+   ```
+1. Install Spaces.
+   ```bash
+   up space init --token-file=key.json "v${VERSION_NUM}" \
+     --set "ingress.host=${ROUTER_HOST}" \
+     --set "clusterType=${CLUSTER_TYPE}" \
+     --set "account=${UPBOUND_ACCOUNT}"
+   ```
+
+1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
+   facing ingress. To get the address for the Ingress, run either of the
+   following:
+   ```bash
+   # For GKE and AKS
+   kubectl get ingress \
+     -n upbound-system mxe-router-ingress \
+     -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+   ```
+   ```bash
+   # For EKS
+   kubectl get ingress \
+     -n upbound-system mxe-router-ingress \
+     -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+   ```
+   If the command above doesn't return a load balancer address then your provider
+   may not have allocated it yet. Once it is available, add a DNS record for the
+   `ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
+   address, add an `A` record, if it's a domain name, add a `CNAME` record.
 
 You should now be able to jump to [Create your first control plane](#create-your-first-control-plane).
 
@@ -129,37 +131,51 @@ Follow instructions [here](./CLUSTER.md) to prepare your cluster.
 
 #### Installation
 
-Install `spaces` Helm chart.
+Assuming you have your kubectl context set to the cluster you want to install
+Spaces into, run the following commands:
 
-```bash
-helm -n upbound-system upgrade --install spaces \
-  oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces \
-  --version "${VERSION_NUM}" \
-  --set "ingress.host=${ROUTER_HOST}" \
-  --set "clusterType=${CLUSTER_TYPE}" \
-  --set "account=${UPBOUND_ACCOUNT}" \
-  --wait
-```
+1. Create an image pull secret so that the cluster can pull Upbound Spaces images.
+   ```bash
+   kubectl -n upbound-system create secret docker-registry upbound-pull-secret \
+     --docker-server=https://us-west1-docker.pkg.dev \
+     --docker-username=_json_key \
+     --docker-password="$(cat $GCP_TOKEN_PATH)"
+   ```
 
-(Non-kind Cluster) Create a DNS record for the load balancer of the public
-facing ingress. To get the address for the Ingress, run either of the
-following:
-```bash
-# For GKE and AKS
-kubectl get ingress \
-  -n upbound-system mxe-router-ingress \
-  -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-```
-```bash
-# For EKS
-kubectl get ingress \
-  -n upbound-system mxe-router-ingress \
-  -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-```
-If the command above doesn't return a load balancer address then your provider
-may not have allocated it yet. Once it is available, add a DNS record for the
-`ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
-address, add an `A` record, if it's a domain name, add a `CNAME` record.
+1. Log in with Helm to be able to pull chart images for the installation commands.
+   ```bash
+   cat $GCP_TOKEN_PATH | helm registry login us-west1-docker.pkg.dev -u _json_key --password-stdin
+   ```
+1. Install Spaces.
+   ```bash
+   helm -n upbound-system upgrade --install spaces \
+     oci://us-west1-docker.pkg.dev/orchestration-build/upbound-environments/spaces \
+     --version "${VERSION_NUM}" \
+     --set "ingress.host=${ROUTER_HOST}" \
+     --set "clusterType=${CLUSTER_TYPE}" \
+     --set "account=${UPBOUND_ACCOUNT}" \
+     --wait
+   ```
+
+1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
+   facing ingress. To get the address for the Ingress, run either of the
+   following:
+   ```bash
+   # For GKE and AKS
+   kubectl get ingress \
+     -n upbound-system mxe-router-ingress \
+     -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+   ```
+   ```bash
+   # For EKS
+   kubectl get ingress \
+     -n upbound-system mxe-router-ingress \
+     -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+   ```
+   If the command above doesn't return a load balancer address then your provider
+   may not have allocated it yet. Once it is available, add a DNS record for the
+   `ROUTER_HOST` to point to the given load balancer address. If it's an IPv4
+   address, add an `A` record, if it's a domain name, add a `CNAME` record.
    
 
 ## Create Your First Control Plane
