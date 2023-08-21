@@ -41,7 +41,7 @@ tokens you have received.
 
 This is the Spaces version to install.
 ```bash
-export VERSION_NUM=0.15.1
+export VERSION_NUM=0.16.0
 ```
 
 #### Set the router host and cluster type
