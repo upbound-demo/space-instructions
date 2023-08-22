@@ -177,7 +177,7 @@
        source: InjectedIdentity
    EOF
    ```
-The cluster is ready! Go to [README.md](./README.md) to continue with
+The cluster is ready! Go to [README.md](./README.md#using-helm) to continue with
 installation of Upbound Spaces.
 
 ## Azure AKS
@@ -323,7 +323,7 @@ installation of Upbound Spaces.
    EOF
    ```
 
-The cluster is ready! Go to [README.md](./README.md) to continue with
+The cluster is ready! Go to [README.md](./README.md#using-helm) to continue with
 installation of Upbound Spaces.
 
 ## Google Cloud GKE
@@ -458,7 +458,7 @@ installation of Upbound Spaces.
    EOF
    ```
 
-The cluster is ready! Go to [README.md](./README.md) to continue with
+The cluster is ready! Go to [README.md](./README.md#using-helm) to continue with
 installation of Upbound Spaces.
 
 ## kind Cluster
@@ -596,5 +596,5 @@ installation of Upbound Spaces.
    EOF
    ```
 
- The cluster is ready! Go to [README.md](./README.md) to continue with
+ The cluster is ready! Go to [README.md](./README.md#using-helm) to continue with
  installation of Upbound Spaces.
