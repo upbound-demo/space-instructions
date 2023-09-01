@@ -59,13 +59,6 @@ export ROUTER_HOST=proxy.upbound-127.0.0.1.nip.io
 # export ROUTER_HOST=proxy.example.com
 ```
 
-The `CLUSTER_TYPE` is the type of the cluster you're deploying Spaces into. It
-can have the following values: `kind`, `eks`, `aks`, or `gke`. Support for more
-types will be added in the future.
-```bash
-export CLUSTER_TYPE=kind # can be "eks", "aks" or "gke"
-```
-
 ## Install Spaces
 
 ### Using Up CLI
@@ -93,9 +86,11 @@ Spaces into, run the following commands:
    ```bash
    up space init --token-file=${GCP_TOKEN_PATH} "v${VERSION_NUM}" \
      --set "ingress.host=${ROUTER_HOST}" \
-     --set "clusterType=${CLUSTER_TYPE}" \
      --set "account=${UPBOUND_ACCOUNT}"
    ```
+
+   By default, the `init` command will not provision an Ingress. If you want a public Ingress, add
+   the flag `--public-ingress=true`.
 
 1. (Non-kind Cluster) Create a DNS record for the load balancer of the public
    facing ingress. To get the address for the Ingress, run either of the
