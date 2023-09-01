@@ -91,7 +91,7 @@ Spaces into, run the following commands:
    ```
 1. Install Spaces.
    ```bash
-   up space init --token-file=key.json "v${VERSION_NUM}" \
+   up space init --token-file=${GCP_TOKEN_PATH} "v${VERSION_NUM}" \
      --set "ingress.host=${ROUTER_HOST}" \
      --set "clusterType=${CLUSTER_TYPE}" \
      --set "account=${UPBOUND_ACCOUNT}"
