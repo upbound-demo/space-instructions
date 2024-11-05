@@ -1,5 +1,7 @@
 # Control Plane Spaces
 
+## For current documentation please visit https://docs.upbound.io/all-spaces/self-hosted-spaces/quickstart/
+
 **DISCLAIMER**: This is the alpha version of a self-hosted feature available in
 [Upbound](https://www.upbound.io/product/upbound). While the
 service is generally available, this specific mode is not yet production-ready
